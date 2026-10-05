@@ -1,14 +1,340 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Vòng Quay May Mắn - Phần Thưởng Hấp Dẫn</title>
+    <meta name="description" content="Trang web vòng quay may mắn chuyên nghiệp, có bảng điều khiển quản trị phần quà và số lượng tồn kho. Hoạt động 100% offline.">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-    <h1>hello world</h1>
-</body>
 
+    <!-- Header Navigation -->
+    <header class="app-header">
+        <div class="logo-group">
+            <div class="logo-badge">
+                <i class="fa-solid fa-compass"></i>
+            </div>
+            <div>
+                <h1 class="app-title">Lucky Wheel</h1>
+                <div class="app-subtitle">
+                    <span class="status-dot"></span>
+                    <span id="appStatusText">Sẵn sàng quay thưởng</span>
+                </div>
+            </div>
+        </div>
+
+        <nav class="nav-actions">
+            <button class="btn-icon" id="soundToggleBtn" title="Bật / Tắt Âm Thanh" aria-label="Bật hoặc tắt âm thanh">
+                <i class="fa-solid fa-volume-high"></i>
+            </button>
+            <button class="btn-icon" id="fullscreenToggleBtn" title="Toàn Màn Hình" aria-label="Mở toàn màn hình">
+                <i class="fa-solid fa-expand"></i>
+            </button>
+            <button class="btn-admin" id="openAdminBtn" title="Cài đặt hệ thống" aria-label="Mở cài đặt">
+                <i class="fa-solid fa-gear"></i>
+                <span>Cài Đặt</span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- Main Content Arena (2 Cột: Vòng quay bên trái, Danh sách & Thêm Data bên phải) -->
+    <main class="main-content">
+        <div class="wheel-dashboard">
+            <!-- Cột Trái: Vòng Quay May Mắn -->
+            <section class="wheel-column" aria-label="Khu vực vòng quay">
+                <div class="wheel-stage">
+                    <!-- Hiệu ứng hào quang sáng dịu -->
+                    <div class="ambient-glow"></div>
+
+                    <!-- Kim chỉ vòng quay (Precision Titanium Pointer) -->
+                    <div class="wheel-pointer" id="wheelPointer">
+                        <svg class="pointer-shape" viewBox="0 0 36 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Thân kim Titanium -->
+                            <path d="M18 48L7 16C5 10 9 2 18 2C27 2 31 10 29 16L18 48Z" fill="url(#titaniumGrad)" stroke="#c7c7cc" stroke-width="1"/>
+                            <!-- Đầu kim Apple Red điểm nhấn chính xác -->
+                            <path d="M18 48L14 36H22L18 48Z" fill="#ff3b30"/>
+                            <!-- Trục xoay kim loại bóng bẩy -->
+                            <circle cx="18" cy="14" r="5" fill="#ffffff" stroke="#8e8e93" stroke-width="1.5"/>
+                            <circle cx="18" cy="14" r="2" fill="#1d1d1f"/>
+                            <defs>
+                                <linearGradient id="titaniumGrad" x1="7" y1="2" x2="29" y2="48" gradientUnits="userSpaceOnUse">
+                                    <stop stop-color="#ffffff"/>
+                                    <stop offset="0.5" stop-color="#e5e5ea"/>
+                                    <stop offset="1" stop-color="#d1d1d6"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+
+                    <!-- Canvas vẽ vòng quay chính -->
+                    <canvas id="wheelCanvas" width="560" height="560"></canvas>
+
+                    <!-- Nút bấm quay ở trung tâm -->
+                    <button class="center-spin-btn" id="centerSpinBtn" title="Bấm để quay">
+                        <div class="spin-badge">
+                            <span>QUAY</span>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Thanh điều khiển và thông số nhanh -->
+                <div class="controls-bar">
+                    <button class="btn-spin-large" id="largeSpinBtn">
+                        <i class="fa-solid fa-play"></i>
+                        <span>QUAY NGAY</span>
+                    </button>
+
+                    <div class="quick-stats-badge" id="quickStatsBadge">
+                        <span>Đang kích hoạt: <strong id="quickActiveCount" style="color:var(--text-primary);">8</strong></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Cột Phải: Quản lý & Thêm Data Vòng Quay Trực Tiếp -->
+            <aside class="prizes-panel-column" aria-label="Bảng quản lý phần thưởng">
+                <div class="panel-header">
+                    <div class="panel-title-group">
+                        <h2 class="panel-title">Phần Thưởng</h2>
+                        <span class="panel-badge" id="panelPrizeCount">8 mục</span>
+                    </div>
+                    <button class="panel-gear-link" id="quickOpenSettingsBtn" title="Mở cài đặt quản trị">
+                        <i class="fa-solid fa-gear"></i>
+                        <span>Cài Đặt</span>
+                    </button>
+                </div>
+
+                <!-- Form Thêm Nhanh Phần Thưởng -->
+                <div class="quick-add-box">
+                    <label class="quick-add-label" for="quickAddLabel">Thêm phần thưởng mới vào vòng quay:</label>
+                    <div class="quick-add-row">
+                        <input type="text" class="input-text-apple" id="quickAddLabel" placeholder="Tên phần thưởng..." required autocomplete="off">
+                        <input type="text" class="input-emoji-apple" id="quickAddIcon" value="🎁" maxlength="2" title="Icon Emoji">
+                        <input type="color" class="input-color-apple" id="quickAddColor" value="#0071e3" title="Màu nan ô">
+                        <button type="button" class="btn-apple-add" id="quickAddBtn">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Thêm</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Danh Sách Các Phần Thưởng Hiện Có -->
+                <div class="side-prizes-list" id="sidePrizesList">
+                    <!-- Dynamic rendering from app.js -->
+                </div>
+
+                <div class="panel-footer-tip">
+                    <i class="fa-solid fa-sliders" style="color:var(--apple-blue);"></i>
+                    <span>Quản lý phần thưởng trong mục <strong id="linkToSettings" style="color:var(--apple-blue);cursor:pointer;">⚙️ Cài Đặt</strong></span>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <!-- Modal Admin / Quản trị tỉ lệ & hệ thống (Mở khi bấm hình Bánh Răng) -->
+    <div class="modal-overlay" id="adminModal" role="dialog" aria-modal="true" aria-labelledby="adminModalTitle">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2 class="modal-title" id="adminModalTitle">
+                    <i class="fa-solid fa-gear" style="color:var(--apple-blue);"></i>
+                    Cài Đặt Tỉ Lệ Xác Suất (%) & Hệ Thống
+                </h2>
+                <button class="modal-close" id="closeAdminBtn" aria-label="Đóng cửa sổ">&times;</button>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="admin-tabs">
+                <button class="tab-btn active" data-tab="prizesTab">
+                    <i class="fa-solid fa-percent"></i>
+                    Cài Đặt Tỉ Lệ (%)
+                </button>
+                <button class="tab-btn" data-tab="simulationTab">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    Kiểm Tra Xác Suất
+                </button>
+                <button class="tab-btn" data-tab="historyTab">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    Lịch Sử Trúng
+                </button>
+                <button class="tab-btn" data-tab="settingsTab">
+                    <i class="fa-solid fa-gear"></i>
+                    Tùy Chọn
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- TAB 1: PHẦN THƯỞNG & TỈ LỆ -->
+                <div class="tab-pane active" id="prizesTab">
+                    <div class="editor-top-actions">
+                        <div class="prob-summary">
+                            <span class="prob-meter-label">Tổng tỉ lệ các ô kích hoạt:</span>
+                            <span class="prob-tag valid" id="totalProbIndicator">100.0%</span>
+                        </div>
+                        <div class="editor-action-btns">
+                            <button class="btn-secondary" id="autoBalanceBtn" title="Tự động chia đều hoặc cân bằng các tỉ lệ sao cho tổng đúng 100%">
+                                <i class="fa-solid fa-scale-balanced"></i>
+                                Cân Bằng 100%
+                            </button>
+                            <button class="btn-secondary" id="addNewPrizeBtn">
+                                <i class="fa-solid fa-plus"></i>
+                                Thêm Quà Mới
+                            </button>
+                            <button class="btn-secondary" id="resetDefaultBtn" title="Khôi phục danh sách mẫu ban đầu">
+                                <i class="fa-solid fa-rotate"></i>
+                                Mặc Định
+                            </button>
+                            <button class="btn-primary" id="savePrizesBtn">
+                                <i class="fa-solid fa-floppy-disk"></i>
+                                Lưu Thay Đổi
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="prize-table-wrap">
+                        <table class="prize-table" id="prizesTable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">Bật</th>
+                                    <th>Tên Phần Quà</th>
+                                    <th style="width: 65px;">Icon</th>
+                                    <th style="width: 110px;">Tỉ Lệ (%)</th>
+                                    <th style="width: 100px;">Số Lượng</th>
+                                    <th style="width: 60px;">Màu Ô</th>
+                                    <th style="width: 60px;">Màu Chữ</th>
+                                    <th style="width: 50px; text-align: center;">Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prizesTableBody">
+                                <!-- Dynamic Render from JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB 2: KIỂM TRA MÔ PHỎNG XÁC SUẤT -->
+                <div class="tab-pane" id="simulationTab">
+                    <div class="sim-box">
+                        <div class="sim-header">
+                            <div>
+                                <h3 style="font-size: 1.1rem; margin-bottom: 4px;">Kiểm Chứng Thuật Toán Ngẫu Nhiên</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                                    Chạy thử nghiệm hàng nghìn lượt quay ảo tức thì để chứng minh tỉ lệ trúng thực tế phản ánh chính xác % bạn đã thiết lập.
+                                </p>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button class="btn-secondary" id="sim1000Btn">Chạy 1.000 lượt</button>
+                                <button class="btn-primary" id="sim10000Btn">Chạy 10.000 lượt</button>
+                            </div>
+                        </div>
+
+                        <div id="simResultsContainer" style="color: var(--text-secondary); font-size: 0.9rem;">
+                            Bấm một trong hai nút phía trên để bắt đầu thử nghiệm mô phỏng xác suất.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: LỊCH SỬ TRÚNG THƯỞNG -->
+                <div class="tab-pane" id="historyTab">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <span style="color: var(--text-secondary); font-size: 0.9rem;">Ghi nhận các lượt trúng gần nhất:</span>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-secondary" id="exportHistoryBtn">
+                                <i class="fa-solid fa-file-arrow-down"></i>
+                                Xuất CSV
+                            </button>
+                            <button class="btn-secondary" id="clearHistoryBtn" style="color: #f87171;">
+                                <i class="fa-solid fa-trash-can"></i>
+                                Xóa Lịch Sử
+                            </button>
+                        </div>
+                    </div>
+                    <div class="history-list" id="historyListContainer">
+                        <!-- Dynamic items -->
+                    </div>
+                </div>
+
+                <!-- TAB 4: TÙY CHỌN & SAO LƯU -->
+                <div class="tab-pane" id="settingsTab">
+                    <div style="display: flex; flex-direction: column; gap: 18px;">
+                        <div class="sim-box">
+                            <h4 style="margin-bottom: 10px;">Thời Gian Mỗi Lần Quay</h4>
+                            <div style="display: flex; gap: 12px; align-items: center;">
+                                <select id="spinDurationSelect" class="input-text" style="width: auto;">
+                                    <option value="3.5">Nhanh (3.5 giây)</option>
+                                    <option value="5.0">Vừa phải (5.0 giây)</option>
+                                    <option value="6.5" selected>Hồi hộp chuẩn (6.5 giây)</option>
+                                    <option value="8.5">Kịch tính cao (8.5 giây)</option>
+                                    <option value="11.0">Rất lâu (11.0 giây)</option>
+                                </select>
+                                <span style="font-size: 0.85rem; color: var(--text-secondary);">Thời gian giảm tốc quay trước khi dừng.</span>
+                            </div>
+                        </div>
+
+                        <div class="sim-box">
+                            <h4 style="margin-bottom: 10px;">Quản Lý Tồn Kho</h4>
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="autoDeductCheckbox" checked style="width: 18px; height: 18px;">
+                                <span>Tự động trừ số lượng còn lại khi có người trúng giải (nếu ô có đặt số lượng cụ thể).</span>
+                            </label>
+                        </div>
+
+                        <div class="sim-box">
+                            <h4 style="margin-bottom: 10px;">Sao Lưu & Khôi Phục Cấu Hình (JSON)</h4>
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn-secondary" id="exportConfigBtn">
+                                    <i class="fa-solid fa-download"></i>
+                                    Tải File Cấu Hình
+                                </button>
+                                <button class="btn-secondary" id="importConfigTriggerBtn">
+                                    <i class="fa-solid fa-upload"></i>
+                                    Nhập File Cấu Hình
+                                </button>
+                                <input type="file" id="importConfigFileInput" accept=".json" style="display: none;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Chúc Mừng Trúng Thưởng -->
+    <div class="modal-overlay" id="winnerModal" role="dialog" aria-modal="true" aria-labelledby="winnerPrizeName">
+        <div class="modal-container winner-modal">
+            <div class="winner-icon-wrap" id="winnerPrizeIcon">🎁</div>
+            <div class="winner-congrats">🎉 CHÚC MỪNG BẠN! 🎉</div>
+            <h2 class="winner-prize-name" id="winnerPrizeName">Phần Thưởng</h2>
+            <p class="winner-desc" id="winnerPrizeDesc">Bạn vừa trúng được phần quà may mắn này!</p>
+            <div>
+                <button class="btn-claim" id="claimPrizeBtn">
+                    <i class="fa-solid fa-check"></i>
+                    TUYỆT VỜI / QUAY TIẾP
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas Pháo Hoa Confetti -->
+    <canvas id="confettiCanvas"></canvas>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="audio.js"></script>
+    <script src="confetti.js"></script>
+    <script src="wheel.js"></script>
+    <script src="admin.js"></script>
+    <script src="app.js"></script>
+</body>
 </html>
