@@ -1,20 +1,18 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tổng quan | HR Management</title>
-  <link rel="stylesheet" href="assets/css/style.css">
-  <link rel="stylesheet" href="assets/css/layout.css">
-  <link rel="stylesheet" href="assets/css/components.css">
+  <meta name="description" content="Tổng quan hệ thống quản lý nhân sự HR Manager">
+  <title>Tổng quan | HR Manager</title>
+  <link rel="stylesheet" href="src/styles/base.css">
+  <link rel="stylesheet" href="src/styles/layout.css">
 </head>
 <body>
-  <aside id="sidebar"></aside>
-  <main class="main-content">
-    <h1>Tổng quan</h1>
-    <p>Chào mừng bạn đến với hệ thống quản lý nhân sự.</p>
-  </main>
-  <script src="assets/js/sidebar.js"></script>
-  <script src="assets/js/main.js"></script>
+  <div class="app-shell">
+    <aside id="app-sidebar" aria-label="Điều hướng chính"></aside>
+    <main class="page-content" aria-label="Nội dung trang Tổng quan"></main>
+  </div>
+  <script type="module" src="src/js/shared/sidebar.js"></script>
 </body>
 </html>
