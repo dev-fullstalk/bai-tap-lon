@@ -1,0 +1,40 @@
+/* Employees Page Styles */
+.emp-code {
+  font-family: monospace;
+  font-weight: 700;
+  color: var(--primary);
+  background: var(--primary-light);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+}
+
+.table-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.action-icon-btn {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  background: #fff;
+  transition: var(--transition);
+}
+
+.action-icon-btn:hover {
+  background: #f1f5f9;
+  color: var(--text-main);
+}
+
+.action-icon-btn.danger:hover {
+  background: var(--danger-light);
+  color: var(--danger);
+  border-color: var(--danger);
+}
