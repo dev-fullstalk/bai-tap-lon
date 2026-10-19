@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Employee Details - HR Manager">
+  <title>Employee Details | HR Manager</title>
+  
+  <!-- Design System & Styles -->
+  <link rel="stylesheet" href="src/styles/base.css">
+  <link rel="stylesheet" href="src/styles/layout.css">
+  <link rel="stylesheet" href="src/styles/components.css">
+  <link rel="stylesheet" href="src/styles/pages/employee-detail.css">
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Sidebar (shared module) -->
+    <aside id="app-sidebar" class="app-sidebar" aria-label="Main Navigation"></aside>
+
+    <!-- Main Content Area -->
+    <main class="page-content" aria-label="Employee Details Content">
+      <div class="emp-detail-container">
+
+        <!-- Back Button & Top Header Bar -->
+        <header class="detail-header">
+          <div class="detail-header-top">
+            <a href="employees.html" class="back-link" title="Back to Employees">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+              <span>Back to Employees</span>
+            </a>
+
+            <div class="detail-header-right">
+              <button class="notif-btn" type="button" aria-label="Notifications" title="Notifications">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span class="notif-dot"></span>
+              </button>
+              <div class="user-profile-badge" title="User Profile">
+                <div class="user-avatar-circle">TP</div>
+                <span class="user-name">Thang Phan</span>
+                <svg class="chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="detail-header-main">
+            <div class="detail-page-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </div>
+            <div class="detail-page-info">
+              <h1 class="detail-page-title">Employee Details</h1>
+              <p class="detail-page-desc">View and manage employee information</p>
+            </div>
+          </div>
+        </header>
+
+        <!-- Main Content 2-Column Grid -->
+        <div class="detail-layout">
+
+          <!-- Left Column: Profile Card -->
+          <aside class="profile-card">
+            <div class="profile-summary">
+              <div class="profile-avatar-wrapper">
+                <img id="detail-avatar" src="" alt="Avatar" class="profile-avatar-img">
+                <div id="detail-avatar-fallback" class="profile-avatar-fallback">NA</div>
+                <button type="button" class="btn-change-avatar" id="btn-change-avatar" title="Change Avatar Photo">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                  </svg>
+                </button>
+              </div>
+              <div class="profile-header-info">
+                <h2 class="profile-name" id="detail-name">Loading...</h2>
+                <span class="profile-code" id="detail-code">NV001</span>
+                <span class="status-badge status-active" id="detail-status">Active</span>
+              </div>
+            </div>
+
+            <!-- Contact Quick Links & Badges -->
+            <div class="profile-contact-list">
+              <div class="profile-contact-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="20" height="16" x="2" y="4" rx="2"></rect>
+                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                </svg>
+                <span id="detail-email">an.nguyen@company.com</span>
+              </div>
+              <div class="profile-contact-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+                <span id="detail-phone">0901234567</span>
+              </div>
+              <div class="profile-tags">
+                <span class="profile-tag tag-dept" id="detail-tag-dept">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 21V7l8-4 8 4v14M8 10h2M14 10h2M8 14h2M14 14h2M10 21v-4h4v4M2 21h20"></path>
+                  </svg>
+                  <span id="detail-tag-dept-name">Engineering</span>
+                </span>
+                <span class="profile-tag tag-pos" id="detail-tag-pos">Frontend Developer</span>
+              </div>
+            </div>
+
+            <!-- Personal Information Section -->
+            <div class="profile-section">
+              <div class="profile-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>Personal Information</span>
+              </div>
+              <dl class="info-list">
+                <div class="info-row">
+                  <dt class="info-label">Full Name</dt>
+                  <dd class="info-val" id="detail-pi-fullname">Nguyen Van An</dd>
+                </div>
+                <div class="info-row">
+                  <dt class="info-label">Email</dt>
+                  <dd class="info-val" id="detail-pi-email">an.nguyen@company.com</dd>
+                </div>
+                <div class="info-row">
+                  <dt class="info-label">Phone</dt>
+                  <dd class="info-val" id="detail-pi-phone">0901234567</dd>
+                </div>
+                <div class="info-row">
+                  <dt class="info-label">Date of Birth</dt>
+                  <dd class="info-val" id="detail-pi-dob">15/03/1995</dd>
+                </div>
+                <div class="info-row">
+                  <dt class="info-label">Gender</dt>
+                  <dd class="info-val" id="detail-pi-gender">Male</dd>
+                </div>
+                <div class="info-row">
+                  <dt class="info-label">Address</dt>
+                  <dd class="info-val" id="detail-pi-address">123 Nguyen Van Cu, District 1, HCMC</dd>
+                </div>
+              </dl>
+            </div>
+
+            <!-- About Me Section -->
+            <div class="profile-section">
+              <div class="profile-section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <span>About Me</span>
+              </div>
+              <p class="about-text" id="detail-about">Passionate frontend developer with 3+ years of experience in building modern web applications. I enjoy working in collaborative teams and always strive to create high-quality products that provide great user experiences.</p>
+            </div>
+          </aside>
+
+          <!-- Right Column: Tabs & Cards Content -->
+          <section class="detail-main-content">
+            <!-- Tabs Navigation (Documents tab removed as requested) -->
+            <nav class="detail-tabs-nav" aria-label="Employee Detail Sections">
+              <button type="button" class="tab-btn active" data-tab="tab-work-info">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect width="20" height="14" x="2" y="7" rx="2" ry="2"></rect>
+                  <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                </svg>
+                <span>Work Information</span>
+              </button>
+              <button type="button" class="tab-btn" data-tab="tab-work-history">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                </svg>
+                <span>Work History</span>
+              </button>
+              <button type="button" class="tab-btn" data-tab="tab-performance">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="20" x2="18" y2="10"></line>
+                  <line x1="12" y1="20" x2="12" y2="4"></line>
+                  <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
+                <span>Performance</span>
+              </button>
+            </nav>
+
+            <!-- Tab 1: Work Information Panel -->
+            <div class="tab-panel active" id="tab-work-info">
+              <div class="detail-cards-grid">
+                
+                <!-- Card 1: Department & Position (Icon removed) -->
+                <div class="detail-card">
+                  <div class="detail-card-header">
+                    <h3 class="detail-card-title">Department & Position</h3>
+                  </div>
+                  <dl class="card-info-list">
+                    <div class="card-info-row">
+                      <dt class="card-info-label">Department</dt>
+                      <dd class="card-info-val"><span class="badge-dept-pill" id="card-dept">Engineering</span></dd>
+                    </div>
+                    <div class="card-info-row">
+                      <dt class="card-info-label">Position</dt>
+                      <dd class="card-info-val" id="card-position">Frontend Developer</dd>
+                    </div>
+                    <div class="card-info-row">
+                      <dt class="card-info-label">Manager</dt>
+                      <dd class="card-info-val">
+                        <div class="manager-inline" id="card-manager-wrapper">
+                          <img id="card-manager-avatar" src="" alt="Manager" class="manager-thumb" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+                          <div id="card-manager-fallback" class="manager-fallback" style="display:none;">NA</div>
+                          <span id="card-manager-name">Nguyen Van An</span>
+                        </div>
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- Card 2: Employment Information (Icon removed) -->
+                <div class="detail-card">
+                  <div class="detail-card-header">
+                    <h3 class="detail-card-title">Employment Information</h3>
+                  </div>
+                  <dl class="card-info-list">
+                    <div class="card-info-row">
+                      <dt class="card-info-label">Employee Code</dt>
+                      <dd class="card-info-val" id="card-emp-code">NV001</dd>
+                    </div>
+                    <div class="card-info-row">
+                      <dt class="card-info-label">Employment Type</dt>
+                      <dd class="card-info-val"><span class="badge-type-pill" id="card-emp-type">Full-time</span></dd>
+                    </div>
+                    <div class="card-info-row">
+                      <dt class="card-info-label">Join Date</dt>
+                      <dd class="card-info-val" id="card-join-date">01/06/2022</dd>
+                    </div>
+                    <div class="card-info-row">
+                      <dt class="card-info-label">Status</dt>
+                      <dd class="card-info-val"><span class="status-badge status-active" id="card-status">Active</span></dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- Card 3: Contact Details (Icon removed) -->
+                <div class="detail-card">
+                  <div class="detail-card-header">
+                    <h3 class="detail-card-title">Contact Details</h3>
+                  </div>
+                  <dl class="card-info-list">
+                    <div class="card-info-row">
+                      <dt class="card-info-label">Email</dt>
+                      <dd class="card-info-val" id="card-contact-email">an.nguyen@company.com</dd>
+                    </div>
+                    <div class="card-info-row">
+                      <dt class="card-info-label">Phone</dt>
+                      <dd class="card-info-val" id="card-contact-phone">0901234567</dd>
+                    </div>
+                    <div class="card-info-row">
+                      <dt class="card-info-label">Address</dt>
+                      <dd class="card-info-val" id="card-contact-address">123 Nguyen Van Cu, District 1, HCMC</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- Card 4: Organization Structure (Icon removed) -->
+                <div class="detail-card">
+                  <div class="detail-card-header">
+                    <h3 class="detail-card-title">Organization Structure</h3>
+                  </div>
+                  <dl class="card-info-list">
+                    <div class="card-info-row">
+                      <dt class="card-info-label">Department</dt>
+                      <dd class="card-info-val"><span class="badge-dept-pill" id="card-org-dept">Engineering</span></dd>
+                    </div>
+                    <div class="card-info-row">
+                      <dt class="card-info-label">Position</dt>
+                      <dd class="card-info-val" id="card-org-position">Frontend Developer</dd>
+                    </div>
+                    <div class="card-info-row">
+                      <dt class="card-info-label">Manager</dt>
+                      <dd class="card-info-val">
+                        <div class="manager-inline" id="card-org-manager-wrapper">
+                          <img id="card-org-manager-avatar" src="" alt="Manager" class="manager-thumb" onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';">
+                          <div id="card-org-manager-fallback" class="manager-fallback" style="display:none;">NA</div>
+                          <span id="card-org-manager-name">Nguyen Van An</span>
+                        </div>
+                      </dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <!-- Card 5: Notes (Full Width, Icon removed) -->
+                <div class="detail-card card-full-width">
+                  <div class="detail-card-header header-with-action">
+                    <h3 class="detail-card-title">Notes</h3>
+                    <button type="button" class="btn-add-note" id="btn-add-note">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>
+                      <span>Add Note</span>
+                    </button>
+                  </div>
+                  <div class="notes-content" id="notes-container">
+                    <p class="empty-notes" id="notes-empty-msg">No notes available.</p>
+                    <div class="notes-list" id="notes-list" style="display:none;"></div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Tab 2: Work History Panel -->
+            <div class="tab-panel" id="tab-work-history">
+              <div class="detail-card card-full-width">
+                <div class="detail-card-header">
+                  <h3 class="detail-card-title">Employment Timeline</h3>
+                </div>
+                <div class="timeline-container">
+                  <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                      <div class="timeline-header">
+                        <strong class="timeline-role" id="history-current-role">Frontend Developer</strong>
+                        <span class="timeline-date">Jun 2022 - Present</span>
+                      </div>
+                      <p class="timeline-company">HR Manager Tech Corp &bull; Full-time</p>
+                      <p class="timeline-desc">Responsible for user interface development, state management, and performance optimization across corporate internal dashboard suites.</p>
+                    </div>
+                  </div>
+                  <div class="timeline-item">
+                    <div class="timeline-dot past"></div>
+                    <div class="timeline-content">
+                      <div class="timeline-header">
+                        <strong class="timeline-role">Junior Web Developer</strong>
+                        <span class="timeline-date">Feb 2020 - May 2022</span>
+                      </div>
+                      <p class="timeline-company">Alpha Software Solutions &bull; Full-time</p>
+                      <p class="timeline-desc">Built interactive UI features using JavaScript, HTML5/CSS3, and integrated REST APIs.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 3: Performance Panel -->
+            <div class="tab-panel" id="tab-performance">
+              <div class="performance-grid">
+                <div class="detail-card">
+                  <div class="detail-card-header">
+                    <h3 class="detail-card-title">Latest Review (Q3 2025)</h3>
+                  </div>
+                  <div class="perf-metric-box">
+                    <div class="perf-score">4.8<span>/5.0</span></div>
+                    <div class="perf-rating">Exceeds Expectations</div>
+                  </div>
+                  <p class="perf-summary">Consistently delivers high-quality code ahead of sprint deadlines. Excellent peer review feedback and team collaboration.</p>
+                </div>
+
+                <div class="detail-card">
+                  <div class="detail-card-header">
+                    <h3 class="detail-card-title">Completed Goals</h3>
+                  </div>
+                  <ul class="goals-list">
+                    <li><span class="check-icon">&#10003;</span> Completed 100% of sprint deliverables</li>
+                    <li><span class="check-icon">&#10003;</span> Optimized web app load time by 35%</li>
+                    <li><span class="check-icon">&#10003;</span> Mentored 2 junior frontend engineers</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+          </section>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal Dialog: Add Note -->
+  <dialog id="note-modal" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Note for Employee</h3>
+        <button type="button" class="modal-close-btn" id="btn-close-note-modal" aria-label="Close dialog">&times;</button>
+      </div>
+      <form id="note-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="note-text">Note Content *</label>
+            <textarea id="note-text" class="form-control" rows="4" placeholder="Enter note or feedback regarding this employee..." required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-note-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Note</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Modal Dialog: Change Avatar URL -->
+  <dialog id="avatar-modal" class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title">Update Avatar Photo</h3>
+        <button type="button" class="modal-close-btn" id="btn-close-avatar-modal" aria-label="Close dialog">&times;</button>
+      </div>
+      <form id="avatar-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label" for="avatar-url-input">Photo Image URL *</label>
+            <input type="url" id="avatar-url-input" class="form-control" placeholder="https://images.unsplash.com/..." required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="btn-cancel-avatar-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Photo</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- ES Modules -->
+  <script type="module" src="src/js/shared/sidebar.js"></script>
+  <script type="module" src="src/js/pages/employee-detail.js"></script>
+</body>
+</html>

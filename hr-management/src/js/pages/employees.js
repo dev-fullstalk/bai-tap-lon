@@ -216,7 +216,7 @@ function attachRowActionListeners() {
     row.addEventListener('click', () => {
       const id = row.getAttribute('data-id');
       if (id) {
-        openEditModal(id);
+        window.location.href = `employee-detail.html?id=${encodeURIComponent(id)}`;
       }
     });
   });

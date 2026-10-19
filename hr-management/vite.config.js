@@ -7,6 +7,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         employees: resolve(__dirname, 'employees.html'),
+        employeeDetail: resolve(__dirname, 'employee-detail.html'),
         departments: resolve(__dirname, 'departments.html'),
         users: resolve(__dirname, 'users.html'),
         attendance: resolve(__dirname, 'attendance.html'),
