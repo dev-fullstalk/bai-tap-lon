@@ -390,15 +390,17 @@ body {
   pointer-events: none;
 }
 
-/* Add Payment Button */
-.btn-add-payment {
+/* Add Payment Button & Save Payment Button */
+.btn-add-payment,
+#btn-save-payment {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   background: #ea580c;
-  color: #ffffff;
+  color: #ffffff !important;
   height: 38px;
-  padding: 0 18px;
+  padding: 0 20px;
   border-radius: 10px;
   font-weight: 600;
   font-size: 0.88rem;
@@ -409,7 +411,8 @@ body {
   white-space: nowrap;
 }
 
-.btn-add-payment:hover {
+.btn-add-payment:hover,
+#btn-save-payment:hover {
   background: #c2410c;
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(234, 88, 12, 0.35);

@@ -169,8 +169,8 @@ function renderTable() {
     `;
   } else {
     tbody.innerHTML = pagedItems.map(pay => {
-      const empId = pay.ID_Employees || pay.employee_id || 'EMP001';
-      const empName = pay.employee_name || 'Employee';
+      const empId = pay.ID_Employees || pay.employee_id || (allEmployees[0] ? allEmployees[0].ID : 'NV001');
+      const empName = pay.employee_name || (allEmployees[0] ? allEmployees[0].FULL_NAME : 'Nhân viên');
       const type = capitalize(pay.payment_type || 'salary');
       const method = pay.payment_method || 'Bank Transfer';
       const date = formatDisplayDate(pay.payment_date || pay.due_date);
@@ -181,7 +181,7 @@ function renderTable() {
       const desc = pay.description || '-';
 
       return `
-        <tr data-id="${pay.id}">
+        <tr class="payroll-table-row" data-id="${pay.id}" style="cursor: pointer;" title="Click to view/edit payment">
           <td class="cell-emp-id">${empId}</td>
           <td class="cell-emp-name">${empName}</td>
           <td class="cell-type">${type}</td>
@@ -209,6 +209,7 @@ function renderTable() {
 
   renderPaginationControls(totalPages);
   attachActionDotsListeners();
+  attachRowActionListeners();
 }
 
 /**
@@ -273,6 +274,24 @@ function attachActionDotsListeners() {
       e.stopPropagation();
       const id = btn.getAttribute('data-id');
       openActionDropdown(btn, id);
+    });
+  });
+}
+
+/**
+ * Handle clicking on any row in the table to open Add/Edit Payment modal
+ */
+function attachRowActionListeners() {
+  document.querySelectorAll('.payroll-table-row').forEach(row => {
+    row.addEventListener('click', (e) => {
+      // Do not trigger modal if user clicked the action button or action menu
+      if (e.target.closest('.btn-action-dots') || e.target.closest('#action-dropdown')) {
+        return;
+      }
+      const id = row.getAttribute('data-id');
+      if (id) {
+        openEditPaymentModal(id);
+      }
     });
   });
 }
@@ -470,8 +489,8 @@ function openPayslipModal(id) {
   const modal = document.querySelector('#payslip-modal');
   const content = document.querySelector('#payslip-modal-content');
 
-  const empId = pay.ID_Employees || pay.employee_id || 'EMP001';
-  const empName = pay.employee_name || 'Employee';
+  const empId = pay.ID_Employees || pay.employee_id || (allEmployees[0] ? allEmployees[0].ID : 'NV001');
+  const empName = pay.employee_name || (allEmployees[0] ? allEmployees[0].FULL_NAME : 'Nhân viên');
   const type = capitalize(pay.payment_type || 'salary');
   const method = pay.payment_method || 'Bank Transfer';
   const date = formatDisplayDate(pay.payment_date || pay.due_date);

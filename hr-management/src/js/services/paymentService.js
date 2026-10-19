@@ -5,12 +5,24 @@ export const paymentService = {
     const payments = getTable('payments');
     const employees = getTable('employees');
 
-    return payments.map(pay => {
+    return payments.map((pay, index) => {
       const empId = pay.ID_Employees || pay.employee_id;
-      const emp = employees.find(e => (e.ID || e.id || e.emp_code) === empId);
+      let emp = employees.find(e => (e.ID || e.id || e.emp_code) === empId);
 
-      const resolvedEmployeeId = emp ? (emp.ID || emp.id) : (pay.ID_Employees || pay.employee_id || 'EMP001');
-      const resolvedEmployeeName = emp ? (emp.FULL_NAME || emp.full_name) : (pay.employee_name || 'Employee');
+      // If emp was not found (e.g. legacy EMP001 key), map directly to employee from localStorage
+      if (!emp && employees.length > 0) {
+        const empIndex = typeof empId === 'string' && empId.startsWith('EMP')
+          ? (parseInt(empId.replace('EMP', ''), 10) - 1)
+          : index;
+        if (empIndex >= 0 && empIndex < employees.length) {
+          emp = employees[empIndex];
+        } else {
+          emp = employees[index % employees.length];
+        }
+      }
+
+      const resolvedEmployeeId = emp ? (emp.ID || emp.id || emp.emp_code) : (employees[0] ? (employees[0].ID || employees[0].id) : (pay.ID_Employees || pay.employee_id || 'NV001'));
+      const resolvedEmployeeName = emp ? (emp.FULL_NAME || emp.full_name) : (pay.employee_name || 'Nhân viên');
       const resolvedPaymentType = pay.payment_type || 'salary';
       const resolvedPaymentMethod = pay.payment_method || 'Bank Transfer';
       const resolvedDate = pay.payment_date || pay.due_date || '2026-09-30';
