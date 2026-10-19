@@ -29,7 +29,7 @@ function getCurrentPage() {
 function createSidebarMarkup() {
   const currentPage = getCurrentPage();
   const links = menuItems.map((item) => {
-    const isActive = item.href === currentPage;
+    const isActive = item.href === currentPage || (currentPage === 'employee-detail.html' && item.href === 'employees.html');
     return `
       <a class="sidebar-link${isActive ? ' active' : ''}" href="${item.href}"${isActive ? ' aria-current="page"' : ''}>
         <span class="sidebar-icon">${icons[item.icon]}</span>
