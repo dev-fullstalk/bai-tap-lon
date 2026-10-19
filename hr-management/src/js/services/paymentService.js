@@ -4,45 +4,110 @@ export const paymentService = {
   async getAll() {
     const payments = getTable('payments');
     const employees = getTable('employees');
-    const departments = getTable('departments');
 
     return payments.map(pay => {
-      const emp = employees.find(e => e.id === pay.employee_id);
-      const dept = emp ? departments.find(d => d.id === emp.department_id) : null;
+      const empId = pay.ID_Employees || pay.employee_id;
+      const emp = employees.find(e => (e.ID || e.id || e.emp_code) === empId);
+
+      const resolvedEmployeeId = emp ? (emp.ID || emp.id) : (pay.ID_Employees || pay.employee_id || 'EMP001');
+      const resolvedEmployeeName = emp ? (emp.FULL_NAME || emp.full_name) : (pay.employee_name || 'Employee');
+      const resolvedPaymentType = pay.payment_type || 'salary';
+      const resolvedPaymentMethod = pay.payment_method || 'Bank Transfer';
+      const resolvedDate = pay.payment_date || pay.due_date || '2026-09-30';
+      const resolvedStatus = (pay.payment_status || pay.status || 'paid').toLowerCase();
+      const resolvedAmount = Number(pay.amount !== undefined ? pay.amount : (pay.net_salary || 0));
+
       return {
         ...pay,
-        employees: emp ? {
-          full_name: emp.full_name,
-          emp_code: emp.emp_code,
-          position: emp.position,
-          base_salary: emp.base_salary,
-          departments: dept ? { name: dept.name } : null
-        } : null
+        id: pay.id,
+        ID_Employees: resolvedEmployeeId,
+        employee_id: resolvedEmployeeId,
+        employee_name: resolvedEmployeeName,
+        payment_type: resolvedPaymentType,
+        payment_method: resolvedPaymentMethod,
+        payment_date: resolvedDate,
+        due_date: resolvedDate,
+        payment_status: resolvedStatus,
+        status: resolvedStatus,
+        amount: resolvedAmount,
+        description: pay.description || ''
       };
     });
   },
 
+  async getById(id) {
+    const all = await this.getAll();
+    return all.find(p => p.id === id) || null;
+  },
+
   async create(payData) {
-    const netSalary = Number(payData.base_salary) + Number(payData.bonus || 0) - Number(payData.deductions || 0);
+    const list = getTable('payments');
+    const employees = getTable('employees');
+    const emp = employees.find(e => (e.ID || e.id || e.emp_code) === payData.ID_Employees);
+
     const payload = {
-      id: `pay-${Date.now()}`,
+      id: `PAY-${Date.now()}`,
       created_at: new Date().toISOString(),
-      ...payData,
-      net_salary: netSalary,
-      status: payData.status || 'pending'
+      ID_Employees: payData.ID_Employees,
+      employee_id: payData.ID_Employees,
+      employee_name: payData.employee_name || (emp ? (emp.FULL_NAME || emp.full_name) : 'Employee'),
+      payment_type: payData.payment_type || 'salary',
+      payment_method: payData.payment_method || 'Bank Transfer',
+      payment_date: payData.payment_date || new Date().toISOString().split('T')[0],
+      due_date: payData.payment_date || new Date().toISOString().split('T')[0],
+      payment_status: payData.payment_status || 'paid',
+      status: payData.payment_status || 'paid',
+      amount: Number(payData.amount) || 0,
+      description: payData.description || ''
     };
 
-    const list = getTable('payments');
     list.unshift(payload);
     saveTable('payments', list);
     return payload;
   },
 
-  async updateStatus(id, status, paymentDate = null) {
-    const payDate = status === 'paid' ? (paymentDate || new Date().toISOString().split('T')[0]) : null;
-
+  async update(id, updateData) {
     let list = getTable('payments');
-    list = list.map(p => p.id === id ? { ...p, status, payment_date: payDate } : p);
+    const employees = getTable('employees');
+
+    list = list.map(p => {
+      if (p.id === id) {
+        const empId = updateData.ID_Employees || p.ID_Employees || p.employee_id;
+        const emp = employees.find(e => (e.ID || e.id || e.emp_code) === empId);
+        const empName = updateData.employee_name || (emp ? (emp.FULL_NAME || emp.full_name) : p.employee_name);
+
+        return {
+          ...p,
+          ...updateData,
+          ID_Employees: empId,
+          employee_id: empId,
+          employee_name: empName,
+          status: updateData.payment_status || updateData.status || p.payment_status || p.status,
+          payment_status: updateData.payment_status || updateData.status || p.payment_status || p.status,
+          updated_at: new Date().toISOString()
+        };
+      }
+      return p;
+    });
+
+    saveTable('payments', list);
+    return this.getById(id);
+  },
+
+  async updateStatus(id, newStatus) {
+    let list = getTable('payments');
+    list = list.map(p => {
+      if (p.id === id) {
+        return {
+          ...p,
+          payment_status: newStatus,
+          status: newStatus,
+          updated_at: new Date().toISOString()
+        };
+      }
+      return p;
+    });
+
     saveTable('payments', list);
     return list.find(p => p.id === id);
   },

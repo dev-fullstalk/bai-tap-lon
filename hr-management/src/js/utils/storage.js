@@ -141,7 +141,30 @@ const DEFAULT_DATA = {
     { id: 'req-1', employee_id: 'NV005', type: 'leave', start_date: '2025-02-01', end_date: '2025-02-03', reason: 'Nghỉ việc gia đình', status: 'approved', approver_note: 'Đã duyệt' }
   ],
   payments: [
-    { id: 'pay-1', employee_id: 'NV001', month: 1, year: 2025, base_salary: 35000000, work_days: 22, bonus: 5000000, deductions: 3500000, net_salary: 36500000, status: 'paid', payment_date: '2025-01-25' }
+    { id: 'PAY-001', ID_Employees: 'EMP001', employee_id: 'EMP001', employee_name: 'Olivia Martin', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 2500, description: 'September salary' },
+    { id: 'PAY-002', ID_Employees: 'EMP002', employee_id: 'EMP002', employee_name: 'Ethan Wilson', payment_type: 'bonus', payment_method: 'Cash', payment_date: '2026-10-20', due_date: '2026-10-20', payment_status: 'pending', status: 'pending', amount: 1200, description: 'Q3 performance bonus' },
+    { id: 'PAY-003', ID_Employees: 'EMP003', employee_id: 'EMP003', employee_name: 'Sophia Chen', payment_type: 'allowance', payment_method: 'Bank Transfer', payment_date: '2026-10-22', due_date: '2026-10-22', payment_status: 'pending', status: 'pending', amount: 450, description: 'Transportation allowance' },
+    { id: 'PAY-004', ID_Employees: 'EMP004', employee_id: 'EMP004', employee_name: 'Noah Patel', payment_type: 'other', payment_method: 'Cash', payment_date: '2026-09-28', due_date: '2026-09-28', payment_status: 'paid', status: 'paid', amount: 350, description: 'Reimbursement for office supplies' },
+    { id: 'PAY-005', ID_Employees: 'EMP005', employee_id: 'EMP005', employee_name: 'Ava Nguyen', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-10-25', due_date: '2026-10-25', payment_status: 'paid', status: 'paid', amount: 2800, description: 'September salary' },
+    { id: 'PAY-006', ID_Employees: 'EMP006', employee_id: 'EMP006', employee_name: 'Liam Johnson', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 2600, description: 'September salary' },
+    { id: 'PAY-007', ID_Employees: 'EMP007', employee_id: 'EMP007', employee_name: 'Emma Davis', payment_type: 'bonus', payment_method: 'Bank Transfer', payment_date: '2026-10-15', due_date: '2026-10-15', payment_status: 'paid', status: 'paid', amount: 1800, description: 'Annual performance bonus' },
+    { id: 'PAY-008', ID_Employees: 'EMP008', employee_id: 'EMP008', employee_name: 'Lucas Brown', payment_type: 'allowance', payment_method: 'Bank Transfer', payment_date: '2026-10-01', due_date: '2026-10-01', payment_status: 'paid', status: 'paid', amount: 300, description: 'Meal allowance' },
+    { id: 'PAY-009', ID_Employees: 'EMP009', employee_id: 'EMP009', employee_name: 'Mia Garcia', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 2400, description: 'September salary' },
+    { id: 'PAY-010', ID_Employees: 'EMP010', employee_id: 'EMP010', employee_name: 'James Miller', payment_type: 'bonus', payment_method: 'Cash', payment_date: '2026-10-24', due_date: '2026-10-24', payment_status: 'pending', status: 'pending', amount: 1500, description: 'Project completion bonus' },
+    { id: 'PAY-011', ID_Employees: 'EMP011', employee_id: 'EMP011', employee_name: 'Benjamin Taylor', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 3200, description: 'September salary' },
+    { id: 'PAY-012', ID_Employees: 'EMP012', employee_id: 'EMP012', employee_name: 'Charlotte Anderson', payment_type: 'allowance', payment_method: 'Bank Transfer', payment_date: '2026-10-05', due_date: '2026-10-05', payment_status: 'paid', status: 'paid', amount: 800, description: 'Housing allowance' },
+    { id: 'PAY-013', ID_Employees: 'EMP013', employee_id: 'EMP013', employee_name: 'Alexander Thomas', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 2300, description: 'September salary' },
+    { id: 'PAY-014', ID_Employees: 'EMP014', employee_id: 'EMP014', employee_name: 'Amelia Jackson', payment_type: 'other', payment_method: 'Cash', payment_date: '2026-10-10', due_date: '2026-10-10', payment_status: 'paid', status: 'paid', amount: 650, description: 'Travel expenses refund' },
+    { id: 'PAY-015', ID_Employees: 'EMP015', employee_id: 'EMP015', employee_name: 'Henry White', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 3600, description: 'September salary' },
+    { id: 'PAY-016', ID_Employees: 'EMP016', employee_id: 'EMP016', employee_name: 'Harper Harris', payment_type: 'bonus', payment_method: 'Bank Transfer', payment_date: '2026-10-18', due_date: '2026-10-18', payment_status: 'pending', status: 'pending', amount: 1100, description: 'Sales achievement bonus' },
+    { id: 'PAY-017', ID_Employees: 'EMP017', employee_id: 'EMP017', employee_name: 'Sebastian Martin', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 2900, description: 'September salary' },
+    { id: 'PAY-018', ID_Employees: 'EMP018', employee_id: 'EMP018', employee_name: 'Evelyn Thompson', payment_type: 'allowance', payment_method: 'Bank Transfer', payment_date: '2026-10-02', due_date: '2026-10-02', payment_status: 'paid', status: 'paid', amount: 250, description: 'Internet & mobile allowance' },
+    { id: 'PAY-019', ID_Employees: 'EMP019', employee_id: 'EMP019', employee_name: 'Daniel Garcia', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 2750, description: 'September salary' },
+    { id: 'PAY-020', ID_Employees: 'EMP020', employee_id: 'EMP020', employee_name: 'Emily Martinez', payment_type: 'other', payment_method: 'Cash', payment_date: '2026-10-21', due_date: '2026-10-21', payment_status: 'pending', status: 'pending', amount: 550, description: 'Equipment purchase refund' },
+    { id: 'PAY-021', ID_Employees: 'EMP021', employee_id: 'EMP021', employee_name: 'Michael Robinson', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 3800, description: 'September salary' },
+    { id: 'PAY-022', ID_Employees: 'EMP022', employee_id: 'EMP022', employee_name: 'Elizabeth Clark', payment_type: 'bonus', payment_method: 'Bank Transfer', payment_date: '2026-10-12', due_date: '2026-10-12', payment_status: 'paid', status: 'paid', amount: 950, description: 'Customer feedback bonus' },
+    { id: 'PAY-023', ID_Employees: 'EMP023', employee_id: 'EMP023', employee_name: 'William Rodriguez', payment_type: 'allowance', payment_method: 'Bank Transfer', payment_date: '2026-10-23', due_date: '2026-10-23', payment_status: 'pending', status: 'pending', amount: 400, description: 'Health & wellness stipend' },
+    { id: 'PAY-024', ID_Employees: 'EMP024', employee_id: 'EMP024', employee_name: 'Victoria Lewis', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 3700, description: 'September salary' }
   ]
 };
 
@@ -159,6 +182,16 @@ function initializeStorage() {
         const parsed = JSON.parse(raw);
         // If parsed departments is less than 6 or missing ID_DEPARTMENT, refresh
         if (!Array.isArray(parsed) || parsed.length < 6 || !parsed[0].ID_DEPARTMENT) {
+          localStorage.setItem(key, JSON.stringify(DEFAULT_DATA[table]));
+        }
+      } catch {
+        localStorage.setItem(key, JSON.stringify(DEFAULT_DATA[table]));
+      }
+    } else if (table === 'payments') {
+      try {
+        const parsed = JSON.parse(raw);
+        // If parsed payments is empty or missing payment_type, refresh with default UI dataset
+        if (!Array.isArray(parsed) || parsed.length < 5 || !parsed[0].payment_type) {
           localStorage.setItem(key, JSON.stringify(DEFAULT_DATA[table]));
         }
       } catch {
