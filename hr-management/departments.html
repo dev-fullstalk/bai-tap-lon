@@ -30,7 +30,7 @@
               </svg>
             </div>
             <div class="dept-header-info">
-              <h1 class="dept-page-title">Departments</h1>
+              <h1 class="dept-page-title">Department List</h1>
               <p class="dept-page-desc">Manage department information, members and organizational structure.</p>
             </div>
           </div>
@@ -116,45 +116,57 @@
           </div>
         </section>
 
-        <!-- Search & Filter Bar -->
-        <section class="dept-filters-card" aria-label="Filters">
-          <div class="filter-search-box">
-            <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            <input type="text" id="search-department" placeholder="Search by department name or description..." autocomplete="off">
-          </div>
-
-          <div class="filter-select-box">
-            <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 21V7l8-4 8 4v14M8 10h2M14 10h2M8 14h2M14 14h2M10 21v-4h4v4M2 21h20"></path>
-            </svg>
-            <select id="filter-department-select" aria-label="Filter by department">
-              <option value="">All Departments</option>
-            </select>
-          </div>
-
-          <div class="filter-select-box">
-            <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10"></circle>
-              <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-            <select id="filter-status" aria-label="Filter by status">
-              <option value="">All Statuses</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
-        </section>
-
-        <!-- Department Table Card -->
+        <!-- Department Table Card with Header Filters -->
         <section class="dept-table-card" aria-label="Department List Table">
           <div class="table-card-header">
-            <div>
-              <h2 class="table-card-title">Department List</h2>
-              <p class="table-card-subtitle">List of all departments in the organization.</p>
+            <div class="table-filter-group">
+              <!-- Search box -->
+              <div class="filter-search-box">
+                <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input type="text" id="search-department" placeholder="Search by name, department code, description..." autocomplete="off">
+              </div>
+
+              <!-- Department Filter -->
+              <div class="filter-select-box">
+                <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 21V7l8-4 8 4v14M8 10h2M14 10h2M8 14h2M14 14h2M10 21v-4h4v4M2 21h20"></path>
+                </svg>
+                <select id="filter-department-select" aria-label="Filter by department">
+                  <option value="">All Departments</option>
+                </select>
+              </div>
+
+              <!-- Direct Manager Filter -->
+              <div class="filter-select-box">
+                <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <select id="filter-manager-select" aria-label="Filter by direct manager">
+                  <option value="">All Managers</option>
+                </select>
+              </div>
+
+              <!-- Status Filter: Only Active and Inactive -->
+              <div class="filter-select-box">
+                <svg class="filter-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <select id="filter-status" aria-label="Filter by status">
+                  <option value="">All Statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                </select>
+              </div>
             </div>
+
+            <!-- Add Department Button -->
             <button type="button" class="btn-add-dept" id="btn-open-add-dept">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -168,12 +180,13 @@
             <table class="dept-table">
               <thead>
                 <tr>
-                  <th>Department Name</th>
+                  <th>ID</th>
+                  <th>Department</th>
+                  <th>Code</th>
                   <th>Description</th>
                   <th>Direct Manager</th>
                   <th>Employees</th>
                   <th>Status</th>
-                  <th style="width: 40px;"></th>
                 </tr>
               </thead>
               <tbody id="departments-table-body">

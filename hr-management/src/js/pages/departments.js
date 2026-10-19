@@ -118,10 +118,21 @@ function updateKpiStats(departments, employees) {
 
 function populateFilterDropdowns(departments) {
   const filterSelect = document.querySelector('#filter-department-select');
-  if (!filterSelect) return;
+  if (filterSelect) {
+    const options = departments.map(d => `<option value="${d.ID_DEPARTMENT || d.id}">${d.NAME || d.name}</option>`).join('');
+    filterSelect.innerHTML = `<option value="">All Departments</option>` + options;
+  }
 
-  const options = departments.map(d => `<option value="${d.ID_DEPARTMENT || d.id}">${d.NAME || d.name}</option>`).join('');
-  filterSelect.innerHTML = `<option value="">All Departments</option>` + options;
+  const managerFilter = document.querySelector('#filter-manager-select');
+  if (managerFilter) {
+    const mgrIds = [...new Set(departments.map(d => d.DIRECT_MANAGER).filter(Boolean))];
+    const options = mgrIds.map(mgrId => {
+      const emp = allEmployees.find(e => (e.ID || e.id || e.emp_code) === mgrId);
+      const name = emp ? (emp.FULL_NAME || emp.full_name) : mgrId;
+      return `<option value="${mgrId}">${name}</option>`;
+    }).join('');
+    managerFilter.innerHTML = `<option value="">All Managers</option>` + options;
+  }
 }
 
 function populateManagerDropdown(employees) {
@@ -178,7 +189,7 @@ function renderTable() {
   if (total === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="6" style="text-align: center; padding: 48px; color: #94a3b8;">
+        <td colspan="7" style="text-align: center; padding: 48px; color: #94a3b8;">
           No departments found matching your criteria.
         </td>
       </tr>
@@ -190,6 +201,7 @@ function renderTable() {
   tbody.innerHTML = pageItems.map(dept => {
     const id = dept.ID_DEPARTMENT || dept.id;
     const name = dept.NAME || dept.name || 'Unnamed';
+    const code = dept.CODE || dept.code || 'DEPT';
     const desc = dept.DESCRIPTION || dept.description || 'No description available.';
     const managerId = dept.DIRECT_MANAGER || dept.manager_id;
     const status = dept.STATUS || dept.status || 'Active';
@@ -205,7 +217,7 @@ function renderTable() {
     // Find direct manager details using managerId -> employee.ID
     const manager = allEmployees.find(e => (e.ID || e.id || e.emp_code) === managerId);
     
-    let managerMarkup = `<span style="color: #94a3b8; font-size: 0.85rem;">Unassigned</span>`;
+    let managerMarkup = `<span style="color: #94a3b8; font-size: 0.88rem;">Unassigned</span>`;
     if (manager) {
       const mgrName = manager.FULL_NAME || manager.full_name;
       const mgrAvatar = manager.AVATAR || manager.avatar;
@@ -226,26 +238,16 @@ function renderTable() {
     const iconBox = getIconMarkup(iconKey, name);
 
     return `
-      <tr class="dept-table-row" data-id="${id}" title="Click to view/edit department">
+      <tr class="dept-table-row" data-id="${id}" title="Click to view/edit details" style="cursor: pointer;">
+        <td><span class="dept-code-text">${id}</span></td>
+        <td><span class="dept-name">${name}</span></td>
+        <td><span class="dept-code-text">${code}</span></td>
         <td>
-          <div class="dept-name-cell">
-            ${iconBox}
-            <span class="dept-name-text">${name}</span>
-          </div>
-        </td>
-        <td>
-          <div class="dept-desc-text">${desc}</div>
+          <div class="dept-desc-text" title="${desc}">${desc}</div>
         </td>
         <td>${managerMarkup}</td>
         <td><span class="dept-emp-count">${empCount}</span></td>
         <td><span class="status-badge ${statusClass}">${status}</span></td>
-        <td>
-          <div class="row-chevron" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </div>
-        </td>
       </tr>
     `;
   }).join('');
@@ -318,24 +320,39 @@ function attachRowListeners() {
 function setupEventListeners() {
   const searchInput = document.querySelector('#search-department');
   const deptFilter = document.querySelector('#filter-department-select');
+  const managerFilter = document.querySelector('#filter-manager-select');
   const statusFilter = document.querySelector('#filter-status');
 
   const handleFilter = () => {
     const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
     const deptId = deptFilter ? deptFilter.value : '';
+    const managerId = managerFilter ? managerFilter.value : '';
     const status = statusFilter ? statusFilter.value : '';
 
     filteredDepartments = allDepartments.filter(dept => {
       const name = (dept.NAME || dept.name || '').toLowerCase();
+      const code = (dept.CODE || dept.code || '').toLowerCase();
       const desc = (dept.DESCRIPTION || dept.description || '').toLowerCase();
-      const id = dept.ID_DEPARTMENT || dept.id;
+      const id = (dept.ID_DEPARTMENT || dept.id || '').toLowerCase();
       const deptStatus = dept.STATUS || dept.status;
+      const deptManagerId = dept.DIRECT_MANAGER || dept.manager_id || '';
 
-      const matchQuery = !query || name.includes(query) || desc.includes(query);
-      const matchDept = !deptId || id === deptId;
+      // Also search by manager's name if applicable
+      const manager = allEmployees.find(e => (e.ID || e.id || e.emp_code) === deptManagerId);
+      const managerName = (manager ? (manager.FULL_NAME || manager.full_name) : '').toLowerCase();
+
+      const matchQuery = !query || 
+        name.includes(query) || 
+        code.includes(query) || 
+        desc.includes(query) || 
+        id.includes(query) ||
+        managerName.includes(query);
+
+      const matchDept = !deptId || (dept.ID_DEPARTMENT || dept.id) === deptId;
+      const matchManager = !managerId || deptManagerId === managerId;
       const matchStatus = !status || deptStatus === status;
 
-      return matchQuery && matchDept && matchStatus;
+      return matchQuery && matchDept && matchManager && matchStatus;
     });
 
     currentPage = 1;
@@ -344,6 +361,7 @@ function setupEventListeners() {
 
   if (searchInput) searchInput.addEventListener('input', handleFilter);
   if (deptFilter) deptFilter.addEventListener('change', handleFilter);
+  if (managerFilter) managerFilter.addEventListener('change', handleFilter);
   if (statusFilter) statusFilter.addEventListener('change', handleFilter);
 
   // Modal handlers
