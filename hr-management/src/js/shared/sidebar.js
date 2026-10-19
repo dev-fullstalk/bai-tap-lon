@@ -42,15 +42,18 @@ function createSidebarMarkup() {
       <span class="brand-logo">${icons.brand}</span>
       <span class="brand-copy">
         <strong>HR Manager</strong>
-        <small>Quản lý nhân sự</small>
+        <small>Human Resources</small>
       </span>
       <button class="sidebar-close" type="button" aria-label="Đóng menu">${icons.close}</button>
     </div>
     <nav class="sidebar-nav" aria-label="Menu quản lý nhân sự">
-      <span class="sidebar-label">Management menu</span>
+      <span class="sidebar-label">MANAGEMENT MENU</span>
       ${links}
     </nav>
-    <p class="sidebar-footer">Con người là tài sản quý giá nhất của doanh nghiệp</p>`;
+    <div class="sidebar-footer">
+      <div style="font-weight: 600; color: var(--color-navy-800); margin-bottom: 2px;">© 2025 HR Manager</div>
+      <div style="color: var(--color-navy-400); font-size: 0.72rem;">Build a better workplace together</div>
+    </div>`;
 }
 
 function closeSidebar() {
