@@ -1,173 +1,255 @@
-import { userService } from '../services/userService.js';
 import { toast } from '../shared/notifications.js';
-import { isEmpty, isValidEmail } from '../utils/validation.js';
 
-let allUsers = [];
+const SETTINGS_KEY = 'hr_user_account_settings';
 
-document.addEventListener('DOMContentLoaded', async () => {
-  await initUsersPage();
-  setupEventListeners();
+const DEFAULT_USER_DATA = {
+  fullName: 'Thang Phan',
+  role: 'HR Manager',
+  status: 'Active',
+  email: 'thangphan@company.com',
+  phone: '0987654321',
+  joinedDate: 'Joined on 01/01/2023',
+  gender: 'Male',
+  dob: '15/05/1998',
+  address: '123 Nguyen Van Cu, District 1, HCMC',
+  about: 'Passionate about building efficient HR processes and creating a positive work environment. I enjoy working with people and contributing to the growth of the organization.',
+  avatarUrl: ''
+};
+
+const DEFAULT_SETTINGS = {
+  emailNotif: true,
+  systemNotif: true,
+  requestNotif: false,
+  language: 'en',
+  timezone: 'Asia/Ho_Chi_Minh'
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+  initUserData();
+  setupTabs();
+  setupPasswordToggle();
+  setupPasswordChange();
+  setupSettingsSave();
+  setupAvatarModal();
 });
 
-async function initUsersPage() {
+function loadStoredSettings() {
+  const saved = localStorage.getItem(SETTINGS_KEY);
+  if (!saved) return { ...DEFAULT_SETTINGS };
   try {
-    allUsers = await userService.getAll();
-    renderUsersTable(allUsers);
-  } catch (error) {
-    console.error('Lỗi tải người dùng:', error);
-    toast.error('Không thể tải danh sách tài khoản');
+    return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+  } catch {
+    return { ...DEFAULT_SETTINGS };
   }
 }
 
-function renderUsersTable(users) {
-  const tbody = document.querySelector('#users-table-body');
-  if (!tbody) return;
+function saveStoredSettings(settings) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
 
-  if (users.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">
-          Không tìm thấy tài khoản người dùng nào.
-        </td>
-      </tr>
-    `;
-    return;
+function initUserData() {
+  const storedUser = localStorage.getItem('hr_current_user_profile');
+  const user = storedUser ? { ...DEFAULT_USER_DATA, ...JSON.parse(storedUser) } : DEFAULT_USER_DATA;
+
+  // Set Profile info
+  setText('#user-display-name', user.fullName);
+  setText('#user-display-role', user.role);
+  setText('#user-display-email', user.email);
+  setText('#user-display-phone', user.phone);
+  setText('#user-display-joined', user.joinedDate);
+
+  setText('#user-pi-fullname', user.fullName);
+  setText('#user-pi-email', user.email);
+  setText('#user-pi-phone', user.phone);
+  setText('#user-pi-gender', user.gender);
+  setText('#user-pi-dob', user.dob);
+  setText('#user-pi-address', user.address);
+  setText('#user-pi-about', user.about);
+
+  // Avatar
+  const avatarBadge = document.querySelector('#user-avatar-badge');
+  const avatarImg = document.querySelector('#user-avatar-img');
+  if (user.avatarUrl) {
+    if (avatarImg) {
+      avatarImg.src = user.avatarUrl;
+      avatarImg.style.display = 'block';
+    }
+    if (avatarBadge) avatarBadge.style.display = 'none';
+  } else {
+    if (avatarImg) avatarImg.style.display = 'none';
+    if (avatarBadge) avatarBadge.style.display = 'grid';
   }
 
-  tbody.innerHTML = users.map(user => {
-    const roleClasses = {
-      admin: 'role-admin',
-      hr: 'role-hr',
-      manager: 'role-manager',
-      employee: 'role-employee'
-    };
+  // Load Preferences
+  const settings = loadStoredSettings();
+  const prefEmail = document.querySelector('#pref-email');
+  const prefSystem = document.querySelector('#pref-system');
+  const prefRequest = document.querySelector('#pref-request');
+  const selectLang = document.querySelector('#setting-language');
+  const selectTz = document.querySelector('#setting-timezone');
 
-    const roleLabels = {
-      admin: 'Quản trị viên (Admin)',
-      hr: 'Nhân sự (HR)',
-      manager: 'Trưởng nhóm (Manager)',
-      employee: 'Nhân viên (Employee)'
-    };
+  if (prefEmail) prefEmail.checked = settings.emailNotif;
+  if (prefSystem) prefSystem.checked = settings.systemNotif;
+  if (prefRequest) prefRequest.checked = settings.requestNotif;
+  if (selectLang) selectLang.value = settings.language;
+  if (selectTz) selectTz.value = settings.timezone;
 
-    const statusBadge = user.status === 'active'
-      ? '<span class="badge badge-success"><span class="badge-dot"></span>Hoạt động</span>'
-      : '<span class="badge badge-neutral"><span class="badge-dot"></span>Đã khóa</span>';
-
-    return `
-      <tr>
-        <td>
-          <div class="user-cell">
-            <div class="user-avatar">${(user.full_name || 'US').slice(0, 2).toUpperCase()}</div>
-            <div class="user-cell-meta">
-              <span class="user-cell-name">${user.full_name}</span>
-              <span class="user-cell-sub">${user.email}</span>
-            </div>
-          </div>
-        </td>
-        <td>
-          <span class="role-badge ${roleClasses[user.role] || 'role-employee'}">
-            ${roleLabels[user.role] || user.role}
-          </span>
-        </td>
-        <td>${statusBadge}</td>
-        <td><span style="font-size: 0.82rem; color: var(--text-muted);">${user.last_login || 'Chưa đăng nhập'}</span></td>
-        <td>
-          <select class="filter-select select-role-change" data-id="${user.id}" style="padding: 4px 8px; font-size: 0.8rem;">
-            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
-            <option value="hr" ${user.role === 'hr' ? 'selected' : ''}>HR</option>
-            <option value="manager" ${user.role === 'manager' ? 'selected' : ''}>Manager</option>
-            <option value="employee" ${user.role === 'employee' ? 'selected' : ''}>Employee</option>
-          </select>
-        </td>
-        <td>
-          <div class="table-actions">
-            <button class="btn btn-sm ${user.status === 'active' ? 'btn-outline' : 'btn-secondary'} btn-toggle-status" data-id="${user.id}">
-              ${user.status === 'active' ? 'Khóa' : 'Kích hoạt'}
-            </button>
-            <button class="action-icon-btn danger btn-delete-user" data-id="${user.id}" title="Xóa tài khoản">🗑️</button>
-          </div>
-        </td>
-      </tr>
-    `;
-  }).join('');
-
-  attachUserActions();
+  // Update language flag when changed
+  if (selectLang) {
+    selectLang.addEventListener('change', () => {
+      const flagSpan = selectLang.previousElementSibling;
+      if (flagSpan) {
+        flagSpan.textContent = selectLang.value === 'vi' ? '🇻🇳' : '🇬🇧';
+      }
+    });
+    // Set initial flag
+    const flagSpan = selectLang.previousElementSibling;
+    if (flagSpan) {
+      flagSpan.textContent = selectLang.value === 'vi' ? '🇻🇳' : '🇬🇧';
+    }
+  }
 }
 
-function attachUserActions() {
-  document.querySelectorAll('.select-role-change').forEach(select => {
-    select.addEventListener('change', async (e) => {
-      const id = select.getAttribute('data-id');
-      const newRole = e.target.value;
-      try {
-        await userService.updateRole(id, newRole);
-        toast.success('Đã cập nhật vai trò người dùng');
-        await initUsersPage();
-      } catch (err) {
-        toast.error('Không thể cập nhật vai trò');
-      }
-    });
-  });
+function setText(selector, val) {
+  const el = document.querySelector(selector);
+  if (el) el.textContent = val || '-';
+}
 
-  document.querySelectorAll('.btn-toggle-status').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = btn.getAttribute('data-id');
-      try {
-        await userService.toggleStatus(id);
-        toast.success('Đã cập nhật trạng thái tài khoản');
-        await initUsersPage();
-      } catch (err) {
-        toast.error('Không thể thay đổi trạng thái');
-      }
-    });
-  });
+function setupTabs() {
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
 
-  document.querySelectorAll('.btn-delete-user').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = btn.getAttribute('data-id');
-      if (confirm('Bạn có chắc muốn xóa tài khoản này?')) {
-        try {
-          await userService.delete(id);
-          toast.success('Đã xóa tài khoản');
-          await initUsersPage();
-        } catch (err) {
-          toast.error('Không thể xóa tài khoản');
-        }
+  tabButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-tab');
+
+      tabButtons.forEach(b => b.classList.remove('active'));
+      tabPanels.forEach(p => p.classList.remove('active'));
+
+      btn.classList.add('active');
+      const targetPanel = document.querySelector(`#${targetId}`);
+      if (targetPanel) {
+        targetPanel.classList.add('active');
       }
     });
   });
 }
 
-function setupEventListeners() {
-  const searchInput = document.querySelector('#search-user');
-  const roleFilter = document.querySelector('#filter-user-role');
+function setupPasswordToggle() {
+  document.querySelectorAll('.btn-toggle-eye').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-target');
+      const input = document.getElementById(targetId);
+      if (!input) return;
 
-  const filterUsers = () => {
-    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-    const role = roleFilter ? roleFilter.value : '';
+      const eyeOpen = btn.querySelector('.eye-open');
+      const eyeClosed = btn.querySelector('.eye-closed');
 
-    const filtered = allUsers.filter(u => {
-      const matchQuery = !query || u.full_name.toLowerCase().includes(query) || u.email.toLowerCase().includes(query);
-      const matchRole = !role || u.role === role;
-      return matchQuery && matchRole;
+      if (input.type === 'password') {
+        input.type = 'text';
+        if (eyeOpen) eyeOpen.style.display = 'none';
+        if (eyeClosed) eyeClosed.style.display = 'block';
+      } else {
+        input.type = 'password';
+        if (eyeOpen) eyeOpen.style.display = 'block';
+        if (eyeClosed) eyeClosed.style.display = 'none';
+      }
     });
+  });
+}
 
-    renderUsersTable(filtered);
+function setupPasswordChange() {
+  const btnSubmit = document.querySelector('#btn-submit-password');
+  const currInput = document.querySelector('#current-password');
+  const newInput = document.querySelector('#new-password');
+  const confirmInput = document.querySelector('#confirm-password');
+
+  const handleChange = () => {
+    const current = currInput ? currInput.value.trim() : '';
+    const newPass = newInput ? newInput.value.trim() : '';
+    const confirmPass = confirmInput ? confirmInput.value.trim() : '';
+
+    if (!current) {
+      toast.error('Please enter your current password');
+      if (currInput) currInput.focus();
+      return;
+    }
+
+    if (!newPass) {
+      toast.error('Please enter a new password');
+      if (newInput) newInput.focus();
+      return;
+    }
+
+    if (newPass.length < 6) {
+      toast.error('New password must be at least 6 characters long');
+      if (newInput) newInput.focus();
+      return;
+    }
+
+    if (newPass !== confirmPass) {
+      toast.error('Confirmation password does not match');
+      if (confirmInput) confirmInput.focus();
+      return;
+    }
+
+    // Success
+    toast.success('Password changed successfully!');
+    if (currInput) currInput.value = '';
+    if (newInput) newInput.value = '';
+    if (confirmInput) confirmInput.value = '';
   };
 
-  if (searchInput) searchInput.addEventListener('input', filterUsers);
-  if (roleFilter) roleFilter.addEventListener('change', filterUsers);
+  if (btnSubmit) {
+    btnSubmit.addEventListener('click', handleChange);
+  }
 
-  // Modal thêm tài khoản
-  const btnOpenAdd = document.querySelector('#btn-open-add-user');
-  const modal = document.querySelector('#user-modal');
-  const btnClose = document.querySelector('#btn-close-user-modal');
-  const btnCancel = document.querySelector('#btn-cancel-user-modal');
-  const form = document.querySelector('#user-form');
+  const form = document.querySelector('#form-change-password');
+  if (form) {
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      handleChange();
+    });
+  }
+}
 
-  if (btnOpenAdd && modal) {
-    btnOpenAdd.addEventListener('click', () => {
-      form.reset();
+function setupSettingsSave() {
+  const btnSave = document.querySelector('#btn-save-settings');
+  if (!btnSave) return;
+
+  btnSave.addEventListener('click', () => {
+    const prefEmail = document.querySelector('#pref-email')?.checked ?? true;
+    const prefSystem = document.querySelector('#pref-system')?.checked ?? true;
+    const prefRequest = document.querySelector('#pref-request')?.checked ?? false;
+    const language = document.querySelector('#setting-language')?.value || 'en';
+    const timezone = document.querySelector('#setting-timezone')?.value || 'Asia/Ho_Chi_Minh';
+
+    const newSettings = {
+      emailNotif: prefEmail,
+      systemNotif: prefSystem,
+      requestNotif: prefRequest,
+      language,
+      timezone
+    };
+
+    saveStoredSettings(newSettings);
+    toast.success('Settings saved successfully!');
+  });
+}
+
+function setupAvatarModal() {
+  const btnAvatar = document.querySelector('#btn-change-avatar');
+  const modal = document.querySelector('#avatar-modal');
+  const btnClose = document.querySelector('#btn-close-avatar-modal');
+  const btnCancel = document.querySelector('#btn-cancel-avatar-modal');
+  const form = document.querySelector('#avatar-form');
+  const urlInput = document.querySelector('#avatar-url-input');
+
+  if (btnAvatar && modal) {
+    btnAvatar.addEventListener('click', () => {
+      const stored = localStorage.getItem('hr_current_user_profile');
+      const user = stored ? JSON.parse(stored) : DEFAULT_USER_DATA;
+      if (urlInput) urlInput.value = user.avatarUrl || '';
       modal.showModal();
     });
   }
@@ -177,31 +259,31 @@ function setupEventListeners() {
   if (btnCancel) btnCancel.addEventListener('click', closeModal);
 
   if (form) {
-    form.addEventListener('submit', async (e) => {
+    form.addEventListener('submit', (e) => {
       e.preventDefault();
+      const newUrl = urlInput ? urlInput.value.trim() : '';
 
-      const fullName = document.querySelector('#user-name').value.trim();
-      const email = document.querySelector('#user-email').value.trim();
-      const role = document.querySelector('#user-role').value;
-      const status = document.querySelector('#user-status').value;
+      const stored = localStorage.getItem('hr_current_user_profile');
+      const user = stored ? JSON.parse(stored) : { ...DEFAULT_USER_DATA };
+      user.avatarUrl = newUrl;
+      localStorage.setItem('hr_current_user_profile', JSON.stringify(user));
 
-      if (isEmpty(fullName) || isEmpty(email)) {
-        toast.error('Vui lòng điền đủ họ tên và email');
-        return;
-      }
-      if (!isValidEmail(email)) {
-        toast.error('Email không hợp lệ');
-        return;
+      const avatarBadge = document.querySelector('#user-avatar-badge');
+      const avatarImg = document.querySelector('#user-avatar-img');
+
+      if (newUrl) {
+        if (avatarImg) {
+          avatarImg.src = newUrl;
+          avatarImg.style.display = 'block';
+        }
+        if (avatarBadge) avatarBadge.style.display = 'none';
+      } else {
+        if (avatarImg) avatarImg.style.display = 'none';
+        if (avatarBadge) avatarBadge.style.display = 'grid';
       }
 
-      try {
-        await userService.create({ full_name: fullName, email, role, status });
-        toast.success('Thêm tài khoản thành công');
-        modal.close();
-        await initUsersPage();
-      } catch (err) {
-        toast.error('Lỗi khi thêm tài khoản');
-      }
+      modal.close();
+      toast.success('Profile photo updated successfully!');
     });
   }
 }
