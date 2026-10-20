@@ -181,7 +181,7 @@ function renderTable() {
       const desc = pay.description || '-';
 
       return `
-        <tr class="payroll-table-row" data-id="${pay.id}" style="cursor: pointer;" title="Click to view/edit payment">
+        <tr class="payroll-table-row" data-id="${pay.id}" style="cursor: pointer;" title="Click to view payment detail">
           <td class="cell-emp-id">${empId}</td>
           <td class="cell-emp-name">${empName}</td>
           <td class="cell-type">${type}</td>
@@ -189,9 +189,6 @@ function renderTable() {
           <td class="cell-date">${date}</td>
           <td>${statusBadge}</td>
           <td class="cell-desc" title="${desc}">${desc}</td>
-          <td class="th-actions">
-            <button type="button" class="btn-action-dots" data-id="${pay.id}" aria-label="Action Menu">⋮</button>
-          </td>
         </tr>
       `;
     }).join('');
@@ -279,18 +276,14 @@ function attachActionDotsListeners() {
 }
 
 /**
- * Handle clicking on any row in the table to open Add/Edit Payment modal
+ * Handle clicking on any row in the table to open payment detail page
  */
 function attachRowActionListeners() {
   document.querySelectorAll('.payroll-table-row').forEach(row => {
-    row.addEventListener('click', (e) => {
-      // Do not trigger modal if user clicked the action button or action menu
-      if (e.target.closest('.btn-action-dots') || e.target.closest('#action-dropdown')) {
-        return;
-      }
+    row.addEventListener('click', () => {
       const id = row.getAttribute('data-id');
       if (id) {
-        openEditPaymentModal(id);
+        window.location.href = `payment-detail.html?id=${encodeURIComponent(id)}`;
       }
     });
   });
@@ -372,7 +365,7 @@ function setupActionDropdown() {
       if (!activeActionPaymentId) return;
       const id = activeActionPaymentId;
       closeActionDropdown();
-      openPayslipModal(id);
+      window.location.href = `payment-detail.html?id=${id}`;
     });
   }
 
