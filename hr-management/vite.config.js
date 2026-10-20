@@ -12,7 +12,8 @@ export default defineConfig({
         users: resolve(__dirname, 'users.html'),
         attendance: resolve(__dirname, 'attendance.html'),
         requests: resolve(__dirname, 'requests.html'),
-        payments: resolve(__dirname, 'payments.html')
+        payments: resolve(__dirname, 'payments.html'),
+        paymentDetail: resolve(__dirname, 'payment-detail.html')
       }
     }
   },
