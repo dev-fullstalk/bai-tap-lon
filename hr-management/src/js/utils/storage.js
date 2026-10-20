@@ -129,16 +129,16 @@ const DEFAULT_DATA = {
     { ID: 'NV024', FULL_NAME: 'Tạ Ngọc Ánh', EMAIL: 'anh.ta@company.com', SDT: '0989900112', ID_DEPARTMENT: 'dept-3', STATUS: 'Active', POSITION: 'Sales Representative', AVATAR: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=120&h=120&fit=crop&crop=face' }
   ],
   users: [
-    { id: 'user-1', email: 'admin@company.com', full_name: 'Thang Phan (Admin)', role: 'admin', status: 'active', last_login: '2025-01-15 08:30' },
-    { id: 'user-2', email: 'hr@company.com', full_name: 'Phạm Thị Dung (HR)', role: 'hr', status: 'active', last_login: '2025-01-15 08:45' },
-    { id: 'user-3', email: 'tech.lead@company.com', full_name: 'Nguyễn Văn An (Manager)', role: 'manager', status: 'active', last_login: '2025-01-14 17:15' }
+    { id: 'user-1', employee_id: 'NV001', username: 'admin', password_hash: '$2b$demo-admin-hash', role: 'admin', account_status: 'active', last_login: '2025-01-15 08:30' },
+    { id: 'user-2', employee_id: 'NV004', username: 'dung.pham', password_hash: '$2b$demo-dung-hash', role: 'manager', account_status: 'active', last_login: '2025-01-15 08:45' },
+    { id: 'user-3', employee_id: 'NV001', username: 'an.nguyen', password_hash: '$2b$demo-an-hash', role: 'manager', account_status: 'active', last_login: '2025-01-14 17:15' }
   ],
   attendance: [
     { id: 'att-1', employee_id: 'NV001', date: today, check_in: '08:25', check_out: '17:35', status: 'on_time', note: 'Đúng giờ' },
     { id: 'att-2', employee_id: 'NV002', date: today, check_in: '08:30', check_out: '17:40', status: 'on_time', note: 'Đúng giờ' }
   ],
   requests: [
-    { id: 'req-1', employee_id: 'NV005', type: 'leave', start_date: '2025-02-01', end_date: '2025-02-03', reason: 'Nghỉ việc gia đình', status: 'approved', approver_note: 'Đã duyệt' }
+    { request_id: 1001, employee_id: 'NV005', request_type: 'leave', title: 'Annual leave request', reason: 'Family matter', start_date: '2025-02-01', end_date: '2025-02-03', request_status: 'approved', approver_employee_id: 'NV004', reviewed_at: '2025-01-20T08:30:00.000Z', created_at: '2025-01-18T08:30:00.000Z' }
   ],
   payments: [
     { id: 'PAY-001', ID_Employees: 'NV001', employee_id: 'NV001', employee_name: 'Nguyễn Văn An', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 2500, description: 'September salary' },
