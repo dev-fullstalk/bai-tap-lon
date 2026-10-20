@@ -2,7 +2,14 @@ import { resolve } from 'path';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  // GitHub Pages serves this repository under /bai-tap-lon/.
+  base: '/bai-tap-lon/',
   build: {
+    // GitHub Pages is configured to publish the repository root.
+    // Keep the source project in hr-management, but emit the production files
+    // one level above it so the repository root contains index.html and assets.
+    outDir: '../',
+    emptyOutDir: false,
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
