@@ -62,6 +62,7 @@ export const paymentService = {
       created_at: new Date().toISOString(),
       ID_Employees: payData.ID_Employees,
       employee_id: payData.ID_Employees,
+      request_id: payData.request_id || null,
       employee_name: payData.employee_name || (emp ? (emp.FULL_NAME || emp.full_name) : 'Employee'),
       payment_type: payData.payment_type || 'salary',
       payment_method: payData.payment_method || 'Bank Transfer',

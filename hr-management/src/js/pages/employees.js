@@ -276,7 +276,12 @@ function setupEventListeners() {
       
       const nextCode = `NV${String(allEmployees.length + 1).padStart(3, '0')}`;
       document.querySelector('#emp-code').value = nextCode;
-      document.querySelector('#modal-emp-title').textContent = 'Add New Employee';
+      document.querySelector('#emp-code').disabled = false;
+      document.querySelector('#modal-emp-title').textContent = 'Add Employee';
+      const sub = document.querySelector('#modal-emp-subtitle');
+      if (sub) sub.textContent = 'Create a new employee profile in your organization';
+      document.querySelector('#btn-save-emp').textContent = 'Save Employee';
+      document.querySelector('#emp-status').value = 'Active';
       modal.showModal();
     });
   }
@@ -284,6 +289,20 @@ function setupEventListeners() {
   const closeModal = () => modal && modal.close();
   if (btnClose) btnClose.addEventListener('click', closeModal);
   if (btnCancel) btnCancel.addEventListener('click', closeModal);
+
+  // Close when clicking outside drawer on backdrop
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      const rect = modal.getBoundingClientRect();
+      const clickedInside = (
+        rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX && e.clientX <= rect.left + rect.width
+      );
+      if (!clickedInside) {
+        modal.close();
+      }
+    });
+  }
 
   // Submit form handler
   if (form) {
@@ -351,6 +370,7 @@ function openEditModal(code) {
   const modal = document.querySelector('#emp-modal');
   document.querySelector('#emp-edit-id').value = emp.ID || emp.emp_code;
   document.querySelector('#emp-code').value = emp.ID || emp.emp_code || '';
+  document.querySelector('#emp-code').disabled = true; // Keep ID stable on edit
   document.querySelector('#emp-name').value = emp.FULL_NAME || emp.full_name || '';
   document.querySelector('#emp-email').value = emp.EMAIL || emp.email || '';
   document.querySelector('#emp-phone').value = emp.SDT || emp.phone || '';
@@ -360,5 +380,8 @@ function openEditModal(code) {
   document.querySelector('#emp-avatar').value = emp.AVATAR || emp.avatar || '';
 
   document.querySelector('#modal-emp-title').textContent = 'Edit Employee';
+  const sub = document.querySelector('#modal-emp-subtitle');
+  if (sub) sub.textContent = 'Modify employee details, contact info, and status';
+  document.querySelector('#btn-save-emp').textContent = 'Save Employee';
   if (modal) modal.showModal();
 }
