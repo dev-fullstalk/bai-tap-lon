@@ -5,11 +5,9 @@ export default defineConfig({
   // GitHub Pages serves this repository under /bai-tap-lon/.
   base: '/bai-tap-lon/',
   build: {
-    // GitHub Pages is configured to publish the repository root.
-    // Keep the source project in hr-management, but emit the production files
-    // one level above it so the repository root contains index.html and assets.
-    outDir: '../',
-    emptyOutDir: false,
+    // Keep all generated files inside the project folder.
+    outDir: 'dist',
+    emptyOutDir: true,
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
@@ -21,6 +19,7 @@ export default defineConfig({
         requests: resolve(__dirname, 'requests.html'),
         payments: resolve(__dirname, 'payments.html'),
         paymentDetail: resolve(__dirname, 'payment-detail.html')
+        ,recordDetail: resolve(__dirname, 'record-detail.html')
       }
     }
   },
