@@ -1,204 +1,530 @@
 import { paymentService } from '../services/paymentService.js';
-import { employeeService } from '../services/employeeService.js';
+import { getTable } from '../utils/storage.js';
 import { toast } from '../shared/notifications.js';
-import { formatCurrency } from '../utils/validation.js';
 
 let allPayments = [];
+let filteredPayments = [];
 let allEmployees = [];
+let currentPage = 1;
+const ITEMS_PER_PAGE = 20; // 20 items per page with internal scrollbar
+
+let activeActionPaymentId = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   await initPaymentsPage();
   setupEventListeners();
+  setupActionDropdown();
 });
 
 async function initPaymentsPage() {
   try {
-    const [payments, employees] = await Promise.all([
-      paymentService.getAll(),
-      employeeService.getAll()
-    ]);
-    allPayments = payments;
-    allEmployees = employees;
+    allEmployees = getTable('employees') || [];
+    allPayments = await paymentService.getAll();
+    filteredPayments = [...allPayments];
 
-    populateEmployeeSelect(employees);
-    updatePayrollKPIs(allPayments);
-    renderPaymentsTable(allPayments);
+    populateEmployeeSelect(allEmployees);
+    updateKpiStats(allPayments);
+    applyFiltersAndRender();
   } catch (error) {
-    console.error('Lỗi tải bảng lương:', error);
-    toast.error('Không thể tải dữ liệu bảng lương');
+    console.error('Error loading payroll data:', error);
+    toast.error('Could not load payroll data');
   }
 }
 
+/**
+ * Populate employee select from localStorage employees data
+ * Stores ID_Employees as value
+ */
 function populateEmployeeSelect(employees) {
   const select = document.querySelector('#pay-employee');
-  if (select) {
-    select.innerHTML = employees.map(e => `
-      <option value="${e.id}" data-salary="${e.base_salary || 0}">
-        ${e.full_name} (${e.emp_code}) - ${formatCurrency(e.base_salary || 0)}
-      </option>
-    `).join('');
-  }
-}
+  if (!select) return;
 
-function updatePayrollKPIs(payments) {
-  const total = payments.reduce((acc, curr) => acc + Number(curr.net_salary || 0), 0);
-  const paidCount = payments.filter(p => p.status === 'paid').length;
-  const pendingCount = payments.filter(p => p.status === 'pending').length;
-
-  const elTotal = document.querySelector('#kpi-pay-total');
-  const elPaid = document.querySelector('#kpi-pay-paid-count');
-  const elPending = document.querySelector('#kpi-pay-pending-count');
-
-  if (elTotal) elTotal.textContent = formatCurrency(total);
-  if (elPaid) elPaid.textContent = `${paidCount} kỳ lương`;
-  if (elPending) elPending.textContent = `${pendingCount} kỳ lương`;
-}
-
-function renderPaymentsTable(payments) {
-  const tbody = document.querySelector('#payments-table-body');
-  if (!tbody) return;
-
-  if (payments.length === 0) {
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="8" style="text-align: center; padding: 40px; color: var(--text-muted);">
-          Không tìm thấy kỳ lương nào.
-        </td>
-      </tr>
-    `;
-    return;
-  }
-
-  tbody.innerHTML = payments.map(pay => {
-    const emp = pay.employees;
-    const empName = emp ? emp.full_name : 'Nhân viên';
-    const deptName = emp && emp.departments ? emp.departments.name : '-';
-
-    const statusBadge = pay.status === 'paid'
-      ? '<span class="badge badge-success"><span class="badge-dot"></span>Đã chi trả</span>'
-      : '<span class="badge badge-warning"><span class="badge-dot"></span>Chờ chi trả</span>';
-
-    return `
-      <tr>
-        <td>
-          <div class="user-cell">
-            <div class="user-avatar">${empName.slice(0, 2).toUpperCase()}</div>
-            <div class="user-cell-meta">
-              <span class="user-cell-name">${empName}</span>
-              <span class="user-cell-sub">${deptName}</span>
-            </div>
-          </div>
-        </td>
-        <td><strong>Tháng ${pay.month}/${pay.year}</strong></td>
-        <td><span class="salary-amount">${formatCurrency(pay.base_salary)}</span></td>
-        <td>${pay.work_days || 22} ngày</td>
-        <td><span style="color: var(--success); font-weight: 600;">+${formatCurrency(pay.bonus || 0)}</span></td>
-        <td><span style="color: var(--danger); font-weight: 600;">-${formatCurrency(pay.deductions || 0)}</span></td>
-        <td><span class="salary-amount salary-net">${formatCurrency(pay.net_salary)}</span></td>
-        <td>${statusBadge}</td>
-        <td>
-          <div class="table-actions">
-            <button class="btn btn-sm btn-outline btn-view-slip" data-id="${pay.id}">📄 Phiếu</button>
-            ${pay.status === 'pending' ? `
-              <button class="btn btn-sm btn-primary btn-mark-paid" data-id="${pay.id}">💵 Chi lương</button>
-            ` : ''}
-            <button class="action-icon-btn danger btn-delete-pay" data-id="${pay.id}" title="Xóa">🗑️</button>
-          </div>
-        </td>
-      </tr>
-    `;
+  const currentVal = select.value;
+  select.innerHTML = `<option value="">-- Select Employee --</option>` + employees.map(emp => {
+    const id = emp.ID || emp.id || emp.emp_code;
+    const name = emp.FULL_NAME || emp.full_name || 'Unnamed';
+    return `<option value="${id}" data-name="${name}">${id} - ${name}</option>`;
   }).join('');
 
-  attachPaymentActions();
+  if (currentVal) {
+    select.value = currentVal;
+  }
 }
 
-function attachPaymentActions() {
-  document.querySelectorAll('.btn-mark-paid').forEach(btn => {
-    btn.addEventListener('click', async () => {
+/**
+ * Update top 4 KPI cards matching screenshot numbers and format
+ */
+function updateKpiStats(payments) {
+  const totalPayments = payments.length;
+  const paidCount = payments.filter(p => (p.payment_status || p.status) === 'paid').length;
+  const pendingCount = payments.filter(p => (p.payment_status || p.status) === 'pending').length;
+  const totalAmount = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+
+  const elTotal = document.querySelector('#stat-total-payments');
+  const elPaid = document.querySelector('#stat-paid-payments');
+  const elPending = document.querySelector('#stat-pending-payments');
+  const elAmount = document.querySelector('#stat-total-amount');
+
+  if (elTotal) elTotal.textContent = totalPayments;
+  if (elPaid) elPaid.textContent = paidCount;
+  if (elPending) elPending.textContent = pendingCount;
+  if (elAmount) elAmount.textContent = `$${Math.round(totalAmount).toLocaleString('en-US')}`;
+}
+
+/**
+ * Formats date into "Sep 30, 2026"
+ */
+function formatDisplayDate(dateStr) {
+  if (!dateStr) return '-';
+  // If already in text format (e.g. "Sep 30, 2026")
+  if (dateStr.includes(',') && isNaN(Date.parse(dateStr) === false)) {
+    return dateStr;
+  }
+
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = months[d.getMonth()];
+  const day = d.getDate();
+  const year = d.getFullYear();
+  return `${month} ${day < 10 ? '0' + day : day}, ${year}`;
+}
+
+/**
+ * Capitalize first letter
+ */
+function capitalize(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+/**
+ * Apply search and filters then render table
+ */
+function applyFiltersAndRender() {
+  const searchInput = document.querySelector('#search-payroll');
+  const typeFilter = document.querySelector('#filter-payment-type');
+  const statusFilter = document.querySelector('#filter-payment-status');
+  const dateFilter = document.querySelector('#filter-payment-date');
+
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  const selectedType = typeFilter ? typeFilter.value.toLowerCase().trim() : '';
+  const selectedStatus = statusFilter ? statusFilter.value.toLowerCase().trim() : '';
+  const selectedDate = dateFilter ? dateFilter.value : '';
+
+  filteredPayments = allPayments.filter(pay => {
+    // Search by employee name or ID
+    const empId = String(pay.ID_Employees || pay.employee_id || '').toLowerCase();
+    const empName = String(pay.employee_name || '').toLowerCase();
+    const matchesQuery = !query || empId.includes(query) || empName.includes(query);
+
+    // Filter by payment type
+    const payType = String(pay.payment_type || '').toLowerCase();
+    const matchesType = !selectedType || payType === selectedType;
+
+    // Filter by payment status
+    const payStatus = String(pay.payment_status || pay.status || '').toLowerCase();
+    const matchesStatus = !selectedStatus || payStatus === selectedStatus;
+
+    // Filter by date
+    let matchesDate = true;
+    if (selectedDate) {
+      const pDate = String(pay.payment_date || pay.due_date || '');
+      matchesDate = pDate.startsWith(selectedDate);
+    }
+
+    return matchesQuery && matchesType && matchesStatus && matchesDate;
+  });
+
+  // Reset to first page when filtering
+  currentPage = 1;
+  renderTable();
+}
+
+/**
+ * Render table rows and pagination controls
+ */
+function renderTable() {
+  const tbody = document.querySelector('#payroll-table-body');
+  if (!tbody) return;
+
+  const total = filteredPayments.length;
+  const totalPages = Math.ceil(total / ITEMS_PER_PAGE) || 1;
+
+  if (currentPage > totalPages) currentPage = totalPages;
+  if (currentPage < 1) currentPage = 1;
+
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, total);
+  const pagedItems = filteredPayments.slice(startIndex, endIndex);
+
+  if (pagedItems.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="8" style="text-align: center; padding: 48px 20px; color: #64748b;">
+          No payroll records found matching your filters.
+        </td>
+      </tr>
+    `;
+  } else {
+    tbody.innerHTML = pagedItems.map(pay => {
+      const empId = pay.ID_Employees || pay.employee_id || (allEmployees[0] ? allEmployees[0].ID : 'NV001');
+      const empName = pay.employee_name || (allEmployees[0] ? allEmployees[0].FULL_NAME : 'Nhân viên');
+      const type = capitalize(pay.payment_type || 'salary');
+      const method = pay.payment_method || 'Bank Transfer';
+      const date = formatDisplayDate(pay.payment_date || pay.due_date);
+      const isPaid = (pay.payment_status || pay.status || '').toLowerCase() === 'paid';
+      const statusBadge = isPaid
+        ? '<span class="status-badge status-paid">Paid</span>'
+        : '<span class="status-badge status-pending">Pending</span>';
+      const desc = pay.description || '-';
+
+      return `
+        <tr class="payroll-table-row" data-id="${pay.id}" style="cursor: pointer;" title="Click to view payment detail">
+          <td class="cell-emp-id">${empId}</td>
+          <td class="cell-emp-name">${empName}</td>
+          <td class="cell-type">${type}</td>
+          <td class="cell-method">${method}</td>
+          <td class="cell-date">${date}</td>
+          <td>${statusBadge}</td>
+          <td class="cell-desc" title="${desc}">${desc}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // Update pagination info text
+  const paginationInfo = document.querySelector('#pagination-info');
+  if (paginationInfo) {
+    if (total === 0) {
+      paginationInfo.textContent = 'Showing 0 payrolls';
+    } else {
+      paginationInfo.textContent = `Showing ${startIndex + 1} - ${endIndex} of ${total} payrolls`;
+    }
+  }
+
+  renderPaginationControls(totalPages);
+  attachActionDotsListeners();
+  attachRowActionListeners();
+}
+
+/**
+ * Render pagination numbers and previous/next buttons
+ */
+function renderPaginationControls(totalPages) {
+  const container = document.querySelector('#pagination-controls');
+  if (!container) return;
+
+  let html = `
+    <button type="button" class="page-btn page-nav" id="btn-prev-page" ${currentPage === 1 ? 'disabled' : ''} aria-label="Previous Page">&lt;</button>
+  `;
+
+  for (let i = 1; i <= totalPages; i++) {
+    html += `
+      <button type="button" class="page-btn ${i === currentPage ? 'active' : ''}" data-page="${i}">${i}</button>
+    `;
+  }
+
+  html += `
+    <button type="button" class="page-btn page-nav" id="btn-next-page" ${currentPage === totalPages ? 'disabled' : ''} aria-label="Next Page">&gt;</button>
+  `;
+
+  container.innerHTML = html;
+
+  // Add click events to pagination buttons
+  container.querySelectorAll('.page-btn[data-page]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentPage = Number(btn.getAttribute('data-page'));
+      renderTable();
+    });
+  });
+
+  const btnPrev = container.querySelector('#btn-prev-page');
+  const btnNext = container.querySelector('#btn-next-page');
+
+  if (btnPrev) {
+    btnPrev.addEventListener('click', () => {
+      if (currentPage > 1) {
+        currentPage--;
+        renderTable();
+      }
+    });
+  }
+
+  if (btnNext) {
+    btnNext.addEventListener('click', () => {
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderTable();
+      }
+    });
+  }
+}
+
+/**
+ * Handle three dots action button click
+ */
+function attachActionDotsListeners() {
+  document.querySelectorAll('.btn-action-dots').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
       const id = btn.getAttribute('data-id');
-      try {
-        await paymentService.updateStatus(id, 'paid');
-        toast.success('Đã xác nhận thanh toán lương!');
-        await initPaymentsPage();
-      } catch (err) {
-        toast.error('Không thể cập nhật trạng thái');
+      openActionDropdown(btn, id);
+    });
+  });
+}
+
+/**
+ * Handle clicking on any row in the table to open payment detail page
+ */
+function attachRowActionListeners() {
+  document.querySelectorAll('.payroll-table-row').forEach(row => {
+    row.addEventListener('click', () => {
+      const id = row.getAttribute('data-id');
+      if (id) {
+        window.location.href = `payment-detail.html?id=${encodeURIComponent(id)}`;
       }
     });
   });
+}
 
-  document.querySelectorAll('.btn-view-slip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const id = btn.getAttribute('data-id');
-      openPaySlipModal(id);
-    });
+function openActionDropdown(triggerBtn, paymentId) {
+  activeActionPaymentId = paymentId;
+  const menu = document.querySelector('#action-dropdown');
+  if (!menu) return;
+
+  const payment = allPayments.find(p => p.id === paymentId);
+  if (!payment) return;
+
+  const isPaid = (payment.payment_status || payment.status) === 'paid';
+  const toggleText = document.querySelector('#action-toggle-status-text');
+  if (toggleText) {
+    toggleText.textContent = isPaid ? 'Mark as Pending' : 'Mark as Paid';
+  }
+
+  const rect = triggerBtn.getBoundingClientRect();
+  menu.style.display = 'flex';
+
+  // Calculate coordinates (align right edge of menu to right edge of button)
+  const menuWidth = 170;
+  let left = rect.right - menuWidth;
+  let top = rect.bottom + 6;
+
+  if (top + 160 > window.innerHeight) {
+    top = rect.top - 160;
+  }
+  if (left < 10) left = 10;
+
+  menu.style.top = `${top}px`;
+  menu.style.left = `${left}px`;
+}
+
+function closeActionDropdown() {
+  const menu = document.querySelector('#action-dropdown');
+  if (menu) menu.style.display = 'none';
+  activeActionPaymentId = null;
+}
+
+function setupActionDropdown() {
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#action-dropdown') && !e.target.closest('.btn-action-dots')) {
+      closeActionDropdown();
+    }
   });
 
-  document.querySelectorAll('.btn-delete-pay').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const id = btn.getAttribute('data-id');
-      if (confirm('Bạn có chắc muốn xóa bản ghi lương này?')) {
+  window.addEventListener('resize', closeActionDropdown);
+  window.addEventListener('scroll', closeActionDropdown, true);
+
+  // Toggle status action
+  const btnToggle = document.querySelector('#action-toggle-status');
+  if (btnToggle) {
+    btnToggle.addEventListener('click', async () => {
+      if (!activeActionPaymentId) return;
+      const payment = allPayments.find(p => p.id === activeActionPaymentId);
+      if (!payment) return;
+
+      const currentStatus = (payment.payment_status || payment.status) === 'paid' ? 'paid' : 'pending';
+      const newStatus = currentStatus === 'paid' ? 'pending' : 'paid';
+
+      try {
+        await paymentService.updateStatus(activeActionPaymentId, newStatus);
+        toast.success(`Marked as ${capitalize(newStatus)}`);
+        closeActionDropdown();
+        await initPaymentsPage();
+      } catch (err) {
+        toast.error('Failed to update status');
+      }
+    });
+  }
+
+  // View detail action
+  const btnView = document.querySelector('#action-view-detail');
+  if (btnView) {
+    btnView.addEventListener('click', () => {
+      if (!activeActionPaymentId) return;
+      const id = activeActionPaymentId;
+      closeActionDropdown();
+      window.location.href = `payment-detail.html?id=${id}`;
+    });
+  }
+
+  // Edit payment action
+  const btnEdit = document.querySelector('#action-edit-payment');
+  if (btnEdit) {
+    btnEdit.addEventListener('click', () => {
+      if (!activeActionPaymentId) return;
+      const id = activeActionPaymentId;
+      closeActionDropdown();
+      openEditPaymentModal(id);
+    });
+  }
+
+  // Delete payment action
+  const btnDelete = document.querySelector('#action-delete-payment');
+  if (btnDelete) {
+    btnDelete.addEventListener('click', async () => {
+      if (!activeActionPaymentId) return;
+      const id = activeActionPaymentId;
+      closeActionDropdown();
+
+      if (confirm('Are you sure you want to delete this payroll payment?')) {
         try {
           await paymentService.delete(id);
-          toast.success('Đã xóa bản ghi lương');
+          toast.success('Payroll record deleted');
           await initPaymentsPage();
         } catch (err) {
-          toast.error('Không thể xóa bản ghi');
+          toast.error('Failed to delete payment');
         }
       }
     });
-  });
+  }
 }
 
-function openPaySlipModal(id) {
+/**
+ * Open Modal to Add New Payment
+ */
+function openAddPaymentModal() {
+  const modal = document.querySelector('#payment-modal');
+  const form = document.querySelector('#payment-form');
+  const title = document.querySelector('#modal-payment-title');
+  const editIdInput = document.querySelector('#payment-edit-id');
+
+  if (!modal || !form) return;
+
+  form.reset();
+  if (editIdInput) editIdInput.value = '';
+  if (title) title.textContent = 'Add Payment';
+
+  // Set default date to today
+  const payDateInput = document.querySelector('#pay-date');
+  if (payDateInput) {
+    payDateInput.value = new Date().toISOString().split('T')[0];
+  }
+
+  modal.showModal();
+}
+
+/**
+ * Open Modal to Edit Existing Payment
+ */
+function openEditPaymentModal(paymentId) {
+  const payment = allPayments.find(p => p.id === paymentId);
+  if (!payment) return;
+
+  const modal = document.querySelector('#payment-modal');
+  const form = document.querySelector('#payment-form');
+  const title = document.querySelector('#modal-payment-title');
+  const editIdInput = document.querySelector('#payment-edit-id');
+
+  if (!modal || !form) return;
+
+  if (title) title.textContent = 'Edit Payment';
+  if (editIdInput) editIdInput.value = payment.id;
+
+  const selectEmp = document.querySelector('#pay-employee');
+  const selectType = document.querySelector('#pay-type');
+  const selectMethod = document.querySelector('#pay-method');
+  const inputAmount = document.querySelector('#pay-amount');
+  const inputDate = document.querySelector('#pay-date');
+  const selectStatus = document.querySelector('#pay-status');
+  const inputDesc = document.querySelector('#pay-description');
+
+  if (selectEmp) selectEmp.value = payment.ID_Employees || payment.employee_id || '';
+  if (selectType) selectType.value = (payment.payment_type || 'salary').toLowerCase();
+  if (selectMethod) selectMethod.value = payment.payment_method || 'Bank Transfer';
+  if (inputAmount) inputAmount.value = payment.amount || 0;
+
+  // Format date for date input (YYYY-MM-DD)
+  if (inputDate) {
+    const rawDate = payment.payment_date || payment.due_date;
+    if (rawDate && rawDate.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      inputDate.value = rawDate;
+    } else if (rawDate) {
+      const d = new Date(rawDate);
+      inputDate.value = !isNaN(d.getTime()) ? d.toISOString().split('T')[0] : '';
+    }
+  }
+
+  if (selectStatus) selectStatus.value = (payment.payment_status || payment.status || 'paid').toLowerCase();
+  if (inputDesc) inputDesc.value = payment.description || '';
+
+  modal.showModal();
+}
+
+/**
+ * Open Details Modal
+ */
+function openPayslipModal(id) {
   const pay = allPayments.find(p => p.id === id);
   if (!pay) return;
-
-  const emp = pay.employees;
-  const empName = emp ? emp.full_name : 'Nhân viên';
-  const deptName = emp && emp.departments ? emp.departments.name : '-';
 
   const modal = document.querySelector('#payslip-modal');
   const content = document.querySelector('#payslip-modal-content');
 
+  const empId = pay.ID_Employees || pay.employee_id || (allEmployees[0] ? allEmployees[0].ID : 'NV001');
+  const empName = pay.employee_name || (allEmployees[0] ? allEmployees[0].FULL_NAME : 'Nhân viên');
+  const type = capitalize(pay.payment_type || 'salary');
+  const method = pay.payment_method || 'Bank Transfer';
+  const date = formatDisplayDate(pay.payment_date || pay.due_date);
+  const status = (pay.payment_status || pay.status) === 'paid' ? 'Paid' : 'Pending';
+  const badgeClass = status === 'Paid' ? 'status-paid' : 'status-pending';
+  const amount = Number(pay.amount || 0);
+
   if (content) {
     content.innerHTML = `
-      <div class="payslip-card">
-        <div style="text-align: center; margin-bottom: 12px;">
-          <h3 style="margin-bottom: 4px;">PHIẾU LƯƠNG NHÂN VIÊN</h3>
-          <p style="color: var(--text-muted); font-size: 0.85rem;">Kỳ lương: Tháng ${pay.month} năm ${pay.year}</p>
+      <div class="detail-card">
+        <div class="detail-row">
+          <span class="detail-label">Employee ID:</span>
+          <span class="detail-value"><strong>${empId}</strong></span>
         </div>
-        <div class="payslip-row">
-          <span>Họ và tên:</span>
-          <strong>${empName}</strong>
+        <div class="detail-row">
+          <span class="detail-label">Employee Name:</span>
+          <span class="detail-value">${empName}</span>
         </div>
-        <div class="payslip-row">
-          <span>Phòng ban:</span>
-          <span>${deptName}</span>
+        <div class="detail-row">
+          <span class="detail-label">Payment Type:</span>
+          <span class="detail-value">${type}</span>
         </div>
-        <div class="payslip-row">
-          <span>Số ngày công thực tế:</span>
-          <span>${pay.work_days || 22} ngày</span>
+        <div class="detail-row">
+          <span class="detail-label">Payment Method:</span>
+          <span class="detail-value">${method}</span>
         </div>
-        <hr style="border: none; border-top: 1px dashed var(--border-color); margin: 6px 0;">
-        <div class="payslip-row">
-          <span>Lương cơ bản:</span>
-          <span>${formatCurrency(pay.base_salary)}</span>
+        <div class="detail-row">
+          <span class="detail-label">Due Date:</span>
+          <span class="detail-value">${date}</span>
         </div>
-        <div class="payslip-row">
-          <span>Thưởng & Phụ cấp:</span>
-          <span style="color: var(--success);">+${formatCurrency(pay.bonus || 0)}</span>
+        <div class="detail-row">
+          <span class="detail-label">Amount:</span>
+          <span class="detail-value" style="font-size: 1.1rem; color: #ea580c; font-weight: 700;">$${amount.toLocaleString('en-US')}</span>
         </div>
-        <div class="payslip-row">
-          <span>Khấu trừ (Bảo hiểm, thuế):</span>
-          <span style="color: var(--danger);">-${formatCurrency(pay.deductions || 0)}</span>
+        <div class="detail-row">
+          <span class="detail-label">Payment Status:</span>
+          <span class="status-badge ${badgeClass}">${status}</span>
         </div>
-        <div class="payslip-row total">
-          <span>THỰC LĨNH:</span>
-          <span>${formatCurrency(pay.net_salary)}</span>
-        </div>
-        <div class="payslip-row" style="margin-top: 8px;">
-          <span>Trạng thái:</span>
-          <span><strong>${pay.status === 'paid' ? 'Đã nhận chuyển khoản' : 'Đang xử lý thanh toán'}</strong></span>
+        <div class="detail-row">
+          <span class="detail-label">Description:</span>
+          <span class="detail-value" style="max-width: 60%; text-align: right;">${pay.description || '-'}</span>
         </div>
       </div>
     `;
@@ -207,98 +533,113 @@ function openPaySlipModal(id) {
   if (modal) modal.showModal();
 }
 
+/**
+ * Setup Event Listeners for Filters, Modals and Form Submission
+ */
 function setupEventListeners() {
-  const filterStatus = document.querySelector('#filter-pay-status');
-  const searchInput = document.querySelector('#search-pay');
+  const searchInput = document.querySelector('#search-payroll');
+  const typeFilter = document.querySelector('#filter-payment-type');
+  const statusFilter = document.querySelector('#filter-payment-status');
+  const dateFilter = document.querySelector('#filter-payment-date');
+  const btnClearDate = document.querySelector('#btn-clear-date');
 
-  const filter = () => {
-    const status = filterStatus ? filterStatus.value : '';
-    const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  if (searchInput) searchInput.addEventListener('input', applyFiltersAndRender);
+  if (typeFilter) typeFilter.addEventListener('change', applyFiltersAndRender);
+  if (statusFilter) statusFilter.addEventListener('change', applyFiltersAndRender);
 
-    const filtered = allPayments.filter(p => {
-      const matchStatus = !status || p.status === status;
-      const emp = p.employees;
-      const matchQuery = !query || (emp && emp.full_name.toLowerCase().includes(query));
-      return matchStatus && matchQuery;
-    });
-
-    renderPaymentsTable(filtered);
-  };
-
-  if (filterStatus) filterStatus.addEventListener('change', filter);
-  if (searchInput) searchInput.addEventListener('input', filter);
-
-  // Modal tạo lương
-  const btnOpenAdd = document.querySelector('#btn-open-add-pay');
-  const modal = document.querySelector('#pay-modal');
-  const btnClose = document.querySelector('#btn-close-pay-modal');
-  const btnCancel = document.querySelector('#btn-cancel-pay-modal');
-  const form = document.querySelector('#pay-form');
-  const selectEmp = document.querySelector('#pay-employee');
-  const inputBaseSalary = document.querySelector('#pay-base-salary');
-
-  if (selectEmp && inputBaseSalary) {
-    selectEmp.addEventListener('change', () => {
-      const opt = selectEmp.selectedOptions[0];
-      if (opt) {
-        inputBaseSalary.value = opt.getAttribute('data-salary') || 0;
+  if (dateFilter) {
+    dateFilter.addEventListener('change', () => {
+      if (btnClearDate) {
+        btnClearDate.style.display = dateFilter.value ? 'grid' : 'none';
       }
+      applyFiltersAndRender();
     });
   }
 
-  if (btnOpenAdd && modal) {
-    btnOpenAdd.addEventListener('click', () => {
-      form.reset();
-      const now = new Date();
-      document.querySelector('#pay-month').value = now.getMonth() + 1;
-      document.querySelector('#pay-year').value = now.getFullYear();
-      if (selectEmp && selectEmp.selectedOptions[0]) {
-        inputBaseSalary.value = selectEmp.selectedOptions[0].getAttribute('data-salary') || 0;
-      }
-      modal.showModal();
+  if (btnClearDate && dateFilter) {
+    btnClearDate.addEventListener('click', () => {
+      dateFilter.value = '';
+      btnClearDate.style.display = 'none';
+      applyFiltersAndRender();
     });
   }
+
+  // Open Add Payment Modal
+  const btnOpenAdd = document.querySelector('#btn-open-add-payment');
+  if (btnOpenAdd) {
+    btnOpenAdd.addEventListener('click', openAddPaymentModal);
+  }
+
+  // Close Payment Modal
+  const modal = document.querySelector('#payment-modal');
+  const btnClose = document.querySelector('#btn-close-payment-modal');
+  const btnCancel = document.querySelector('#btn-cancel-payment-modal');
 
   const closeModal = () => modal && modal.close();
   if (btnClose) btnClose.addEventListener('click', closeModal);
   if (btnCancel) btnCancel.addEventListener('click', closeModal);
 
-  // Close payslip modal
+  // Close Details Modal
   const slipModal = document.querySelector('#payslip-modal');
   const slipClose = document.querySelector('#btn-close-slip-modal');
-  if (slipClose && slipModal) {
-    slipClose.addEventListener('click', () => slipModal.close());
-  }
+  const slipDismiss = document.querySelector('#btn-dismiss-slip-modal');
 
+  const closeSlipModal = () => slipModal && slipModal.close();
+  if (slipClose) slipClose.addEventListener('click', closeSlipModal);
+  if (slipDismiss) slipDismiss.addEventListener('click', closeSlipModal);
+
+  // Form Submission
+  const form = document.querySelector('#payment-form');
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const employeeId = document.querySelector('#pay-employee').value;
-      const month = Number(document.querySelector('#pay-month').value);
-      const year = Number(document.querySelector('#pay-year').value);
-      const baseSalary = Number(document.querySelector('#pay-base-salary').value) || 0;
-      const workDays = Number(document.querySelector('#pay-work-days').value) || 22;
-      const bonus = Number(document.querySelector('#pay-bonus').value) || 0;
-      const deductions = Number(document.querySelector('#pay-deductions').value) || 0;
-      const status = document.querySelector('#pay-status').value;
+      const editId = document.querySelector('#payment-edit-id')?.value;
+      const selectEmp = document.querySelector('#pay-employee');
+      const selectedOption = selectEmp?.selectedOptions[0];
+
+      const employeeId = selectEmp?.value;
+      const employeeName = selectedOption?.getAttribute('data-name') || 'Employee';
+      const paymentType = document.querySelector('#pay-type')?.value || 'salary';
+      const paymentMethod = document.querySelector('#pay-method')?.value || 'Bank Transfer';
+      const amount = Number(document.querySelector('#pay-amount')?.value) || 0;
+      const paymentDate = document.querySelector('#pay-date')?.value || new Date().toISOString().split('T')[0];
+      const paymentStatus = document.querySelector('#pay-status')?.value || 'paid';
+      const description = document.querySelector('#pay-description')?.value || '';
+
+      if (!employeeId) {
+        toast.warning('Please select an employee from the list');
+        return;
+      }
+
+      const payload = {
+        ID_Employees: employeeId,
+        employee_id: employeeId,
+        employee_name: employeeName,
+        payment_type: paymentType,
+        payment_method: paymentMethod,
+        amount,
+        payment_date: paymentDate,
+        due_date: paymentDate,
+        payment_status: paymentStatus,
+        status: paymentStatus,
+        description
+      };
 
       try {
-        await paymentService.create({
-          employee_id: employeeId,
-          month,
-          year,
-          base_salary: baseSalary,
-          work_days: workDays,
-          bonus,
-          deductions,
-          status
-        });
-        toast.success('Tạo kỳ lương thành công!');
+        if (editId) {
+          await paymentService.update(editId, payload);
+          toast.success('Payment record updated successfully!');
+        } else {
+          await paymentService.create(payload);
+          toast.success('New payment added successfully!');
+        }
+
         modal.close();
         await initPaymentsPage();
       } catch (err) {
-        toast.error('Không thể tạo kỳ lương');
+        console.error('Error saving payment:', err);
+        toast.error('Failed to save payment record');
       }
     });
   }

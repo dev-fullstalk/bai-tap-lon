@@ -142,7 +142,7 @@ function populateManagerDropdown(employees) {
   const options = employees.map(emp => {
     const id = emp.ID || emp.id || emp.emp_code;
     const name = emp.FULL_NAME || emp.full_name || 'Staff';
-    return `<option value="${id}">${id} - ${name}</option>`;
+    return `<option value="${id}">${id} – ${name}</option>`;
   }).join('');
 
   mgrSelect.innerHTML = `<option value="">-- Select Direct Manager --</option>` + options;
@@ -379,7 +379,12 @@ function setupEventListeners() {
       const nextId = `dept-${allDepartments.length + 1}`;
       document.querySelector('#dept-id').value = nextId;
       document.querySelector('#dept-id').disabled = false;
-      document.querySelector('#modal-dept-title').textContent = 'Add New Department';
+      document.querySelector('#modal-dept-title').textContent = 'Add Department';
+      const sub = document.querySelector('#modal-dept-subtitle');
+      if (sub) sub.textContent = 'Configure department details, manager, and display icon';
+      document.querySelector('#btn-save-dept').textContent = 'Save Department';
+      document.querySelector('#dept-status').value = 'Active';
+      document.querySelector('#dept-icon').value = 'marketing';
       modal.showModal();
     });
   }
@@ -387,6 +392,20 @@ function setupEventListeners() {
   const closeModal = () => modal && modal.close();
   if (btnClose) btnClose.addEventListener('click', closeModal);
   if (btnCancel) btnCancel.addEventListener('click', closeModal);
+
+  // Close when clicking outside drawer on backdrop
+  if (modal) {
+    modal.addEventListener('click', (e) => {
+      const rect = modal.getBoundingClientRect();
+      const clickedInside = (
+        rect.top <= e.clientY && e.clientY <= rect.top + rect.height &&
+        rect.left <= e.clientX && e.clientX <= rect.left + rect.width
+      );
+      if (!clickedInside) {
+        modal.close();
+      }
+    });
+  }
 
   // Form submit handler
   if (form) {
@@ -454,9 +473,12 @@ function openEditModal(id) {
   document.querySelector('#dept-code').value = dept.CODE || dept.code || '';
   document.querySelector('#dept-manager').value = dept.DIRECT_MANAGER || dept.manager_id || '';
   document.querySelector('#dept-status').value = dept.STATUS || dept.status || 'Active';
-  document.querySelector('#dept-icon').value = dept.ICON || dept.icon || 'code';
+  document.querySelector('#dept-icon').value = dept.ICON || dept.icon || 'marketing';
   document.querySelector('#dept-desc').value = dept.DESCRIPTION || dept.description || '';
 
   document.querySelector('#modal-dept-title').textContent = 'Edit Department';
+  const sub = document.querySelector('#modal-dept-subtitle');
+  if (sub) sub.textContent = 'Update department information and direct manager';
+  document.querySelector('#btn-save-dept').textContent = 'Save Department';
   if (modal) modal.showModal();
 }

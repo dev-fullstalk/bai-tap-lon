@@ -11,7 +11,11 @@ permissions:
   id-token: write
 
 concurrency:
+<<<<<<< HEAD
   group: github-pages
+=======
+  group: pages
+>>>>>>> 4adbd8ad5657777063414eb2ba839a5f64cec0ba
   cancel-in-progress: true
 
 jobs:
@@ -22,12 +26,21 @@ jobs:
         working-directory: hr-management
     steps:
       - name: Checkout
+<<<<<<< HEAD
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version-file: hr-management/.nvmrc
+=======
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+>>>>>>> 4adbd8ad5657777063414eb2ba839a5f64cec0ba
           cache: npm
           cache-dependency-path: hr-management/package-lock.json
 

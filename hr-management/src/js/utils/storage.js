@@ -129,19 +129,42 @@ const DEFAULT_DATA = {
     { ID: 'NV024', FULL_NAME: 'Tạ Ngọc Ánh', EMAIL: 'anh.ta@company.com', SDT: '0989900112', ID_DEPARTMENT: 'dept-3', STATUS: 'Active', POSITION: 'Sales Representative', AVATAR: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=120&h=120&fit=crop&crop=face' }
   ],
   users: [
-    { id: 'user-1', email: 'admin@company.com', full_name: 'Thang Phan (Admin)', role: 'admin', status: 'active', last_login: '2025-01-15 08:30' },
-    { id: 'user-2', email: 'hr@company.com', full_name: 'Phạm Thị Dung (HR)', role: 'hr', status: 'active', last_login: '2025-01-15 08:45' },
-    { id: 'user-3', email: 'tech.lead@company.com', full_name: 'Nguyễn Văn An (Manager)', role: 'manager', status: 'active', last_login: '2025-01-14 17:15' }
+    { id: 'user-1', employee_id: 'NV001', username: 'admin', password_hash: '$2b$demo-admin-hash', role: 'admin', account_status: 'active', last_login: '2025-01-15 08:30' },
+    { id: 'user-2', employee_id: 'NV004', username: 'dung.pham', password_hash: '$2b$demo-dung-hash', role: 'manager', account_status: 'active', last_login: '2025-01-15 08:45' },
+    { id: 'user-3', employee_id: 'NV001', username: 'an.nguyen', password_hash: '$2b$demo-an-hash', role: 'manager', account_status: 'active', last_login: '2025-01-14 17:15' }
   ],
   attendance: [
     { id: 'att-1', employee_id: 'NV001', date: today, check_in: '08:25', check_out: '17:35', status: 'on_time', note: 'Đúng giờ' },
     { id: 'att-2', employee_id: 'NV002', date: today, check_in: '08:30', check_out: '17:40', status: 'on_time', note: 'Đúng giờ' }
   ],
   requests: [
-    { id: 'req-1', employee_id: 'NV005', type: 'leave', start_date: '2025-02-01', end_date: '2025-02-03', reason: 'Nghỉ việc gia đình', status: 'approved', approver_note: 'Đã duyệt' }
+    { request_id: 1001, employee_id: 'NV005', request_type: 'leave', title: 'Annual leave request', reason: 'Family matter', start_date: '2025-02-01', end_date: '2025-02-03', request_status: 'approved', approver_employee_id: 'NV004', reviewed_at: '2025-01-20T08:30:00.000Z', created_at: '2025-01-18T08:30:00.000Z' }
   ],
   payments: [
-    { id: 'pay-1', employee_id: 'NV001', month: 1, year: 2025, base_salary: 35000000, work_days: 22, bonus: 5000000, deductions: 3500000, net_salary: 36500000, status: 'paid', payment_date: '2025-01-25' }
+    { id: 'PAY-001', ID_Employees: 'NV001', employee_id: 'NV001', employee_name: 'Nguyễn Văn An', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 2500, description: 'September salary' },
+    { id: 'PAY-002', ID_Employees: 'NV002', employee_id: 'NV002', employee_name: 'Trần Thị Bích', payment_type: 'bonus', payment_method: 'Cash', payment_date: '2026-10-20', due_date: '2026-10-20', payment_status: 'pending', status: 'pending', amount: 1200, description: 'Q3 performance bonus' },
+    { id: 'PAY-003', ID_Employees: 'NV003', employee_id: 'NV003', employee_name: 'Lê Minh Cường', payment_type: 'allowance', payment_method: 'Bank Transfer', payment_date: '2026-10-22', due_date: '2026-10-22', payment_status: 'pending', status: 'pending', amount: 450, description: 'Transportation allowance' },
+    { id: 'PAY-004', ID_Employees: 'NV004', employee_id: 'NV004', employee_name: 'Phạm Thị Dung', payment_type: 'other', payment_method: 'Cash', payment_date: '2026-09-28', due_date: '2026-09-28', payment_status: 'paid', status: 'paid', amount: 350, description: 'Reimbursement for office supplies' },
+    { id: 'PAY-005', ID_Employees: 'NV005', employee_id: 'NV005', employee_name: 'Hoàng Văn Em', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-10-25', due_date: '2026-10-25', payment_status: 'paid', status: 'paid', amount: 2800, description: 'September salary' },
+    { id: 'PAY-006', ID_Employees: 'NV006', employee_id: 'NV006', employee_name: 'Vũ Thị Hà', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 2600, description: 'September salary' },
+    { id: 'PAY-007', ID_Employees: 'NV007', employee_id: 'NV007', employee_name: 'Đặng Văn Hùng', payment_type: 'bonus', payment_method: 'Bank Transfer', payment_date: '2026-10-15', due_date: '2026-10-15', payment_status: 'paid', status: 'paid', amount: 1800, description: 'Annual performance bonus' },
+    { id: 'PAY-008', ID_Employees: 'NV008', employee_id: 'NV008', employee_name: 'Ngô Thị Mai', payment_type: 'allowance', payment_method: 'Bank Transfer', payment_date: '2026-10-01', due_date: '2026-10-01', payment_status: 'paid', status: 'paid', amount: 300, description: 'Meal allowance' },
+    { id: 'PAY-009', ID_Employees: 'NV009', employee_id: 'NV009', employee_name: 'Đoàn Quốc Bảo', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 2400, description: 'September salary' },
+    { id: 'PAY-010', ID_Employees: 'NV010', employee_id: 'NV010', employee_name: 'Nguyễn Ngọc Lan', payment_type: 'bonus', payment_method: 'Cash', payment_date: '2026-10-24', due_date: '2026-10-24', payment_status: 'pending', status: 'pending', amount: 1500, description: 'Project completion bonus' },
+    { id: 'PAY-011', ID_Employees: 'NV011', employee_id: 'NV011', employee_name: 'Trần Quang Khải', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 3200, description: 'September salary' },
+    { id: 'PAY-012', ID_Employees: 'NV012', employee_id: 'NV012', employee_name: 'Lê Thị Thu Hà', payment_type: 'allowance', payment_method: 'Bank Transfer', payment_date: '2026-10-05', due_date: '2026-10-05', payment_status: 'paid', status: 'paid', amount: 800, description: 'Housing allowance' },
+    { id: 'PAY-013', ID_Employees: 'NV013', employee_id: 'NV013', employee_name: 'Phan Minh Trí', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 2300, description: 'September salary' },
+    { id: 'PAY-014', ID_Employees: 'NV014', employee_id: 'NV014', employee_name: 'Vũ Thùy Linh', payment_type: 'other', payment_method: 'Cash', payment_date: '2026-10-10', due_date: '2026-10-10', payment_status: 'paid', status: 'paid', amount: 650, description: 'Travel expenses refund' },
+    { id: 'PAY-015', ID_Employees: 'NV015', employee_id: 'NV015', employee_name: 'Bùi Đức Long', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 3600, description: 'September salary' },
+    { id: 'PAY-016', ID_Employees: 'NV016', employee_id: 'NV016', employee_name: 'Hoàng Khánh Vân', payment_type: 'bonus', payment_method: 'Bank Transfer', payment_date: '2026-10-18', due_date: '2026-10-18', payment_status: 'pending', status: 'pending', amount: 1100, description: 'Sales achievement bonus' },
+    { id: 'PAY-017', ID_Employees: 'NV017', employee_id: 'NV017', employee_name: 'Cao Văn Sơn', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 2900, description: 'September salary' },
+    { id: 'PAY-018', ID_Employees: 'NV018', employee_id: 'NV018', employee_name: 'Đinh Mỹ Duyên', payment_type: 'allowance', payment_method: 'Bank Transfer', payment_date: '2026-10-02', due_date: '2026-10-02', payment_status: 'paid', status: 'paid', amount: 250, description: 'Internet & mobile allowance' },
+    { id: 'PAY-019', ID_Employees: 'NV019', employee_id: 'NV019', employee_name: 'Lương Thanh Tùng', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 2750, description: 'September salary' },
+    { id: 'PAY-020', ID_Employees: 'NV020', employee_id: 'NV020', employee_name: 'Mai Quốc Huy', payment_type: 'other', payment_method: 'Cash', payment_date: '2026-10-21', due_date: '2026-10-21', payment_status: 'pending', status: 'pending', amount: 550, description: 'Equipment purchase refund' },
+    { id: 'PAY-021', ID_Employees: 'NV021', employee_id: 'NV021', employee_name: 'Nghiêm Thùy Trang', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 3800, description: 'September salary' },
+    { id: 'PAY-022', ID_Employees: 'NV022', employee_id: 'NV022', employee_name: 'Phạm Gia Huy', payment_type: 'bonus', payment_method: 'Bank Transfer', payment_date: '2026-10-12', due_date: '2026-10-12', payment_status: 'paid', status: 'paid', amount: 950, description: 'Customer feedback bonus' },
+    { id: 'PAY-023', ID_Employees: 'NV023', employee_id: 'NV023', employee_name: 'Quách Anh Tuấn', payment_type: 'allowance', payment_method: 'Bank Transfer', payment_date: '2026-10-23', due_date: '2026-10-23', payment_status: 'pending', status: 'pending', amount: 400, description: 'Health & wellness stipend' },
+    { id: 'PAY-024', ID_Employees: 'NV024', employee_id: 'NV024', employee_name: 'Tạ Ngọc Ánh', payment_type: 'salary', payment_method: 'Bank Transfer', payment_date: '2026-09-30', due_date: '2026-09-30', payment_status: 'paid', status: 'paid', amount: 3700, description: 'September salary' }
   ]
 };
 
@@ -159,6 +182,16 @@ function initializeStorage() {
         const parsed = JSON.parse(raw);
         // If parsed departments is less than 6 or missing ID_DEPARTMENT, refresh
         if (!Array.isArray(parsed) || parsed.length < 6 || !parsed[0].ID_DEPARTMENT) {
+          localStorage.setItem(key, JSON.stringify(DEFAULT_DATA[table]));
+        }
+      } catch {
+        localStorage.setItem(key, JSON.stringify(DEFAULT_DATA[table]));
+      }
+    } else if (table === 'payments') {
+      try {
+        const parsed = JSON.parse(raw);
+        // If parsed payments is empty, missing payment_type, or still using old EMP prefix instead of localStorage employee IDs
+        if (!Array.isArray(parsed) || parsed.length < 5 || !parsed[0].payment_type || (parsed[0].ID_Employees && parsed[0].ID_Employees.startsWith('EMP'))) {
           localStorage.setItem(key, JSON.stringify(DEFAULT_DATA[table]));
         }
       } catch {

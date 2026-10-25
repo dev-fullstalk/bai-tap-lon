@@ -11,14 +11,34 @@ const icons = {
   close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>'
 };
 
-const menuItems = [
-  { label: 'Overview', href: 'index.html', icon: 'overview' },
-  { label: 'Employees', href: 'employees.html', icon: 'employees' },
-  { label: 'Departments', href: 'departments.html', icon: 'departments' },
-  { label: 'User Accounts', href: 'users.html', icon: 'users' },
-  { label: 'Attendance', href: 'attendance.html', icon: 'attendance' },
-  { label: 'Requests', href: 'requests.html', icon: 'requests' },
-  { label: 'Payroll', href: 'payments.html', icon: 'payments' }
+const menuGroups = [
+  {
+    label: 'Dashboard',
+    items: [
+      { label: 'Dashboard', href: 'index.html', icon: 'overview' }
+    ]
+  },
+  {
+    label: 'Human Resources',
+    items: [
+      { label: 'Employees', href: 'employees.html', icon: 'employees' },
+      { label: 'Departments', href: 'departments.html', icon: 'departments' },
+      { label: 'User Accounts', href: 'users.html', icon: 'users' }
+    ]
+  },
+  {
+    label: 'Attendance & Leave',
+    items: [
+      { label: 'Attendance', href: 'attendance.html', icon: 'attendance' },
+      { label: 'Requests', href: 'requests.html', icon: 'requests' }
+    ]
+  },
+  {
+    label: 'Payment & Income',
+    items: [
+      { label: 'Payment', href: 'payments.html', icon: 'payments' }
+    ]
+  }
 ];
 
 function getCurrentPage() {
@@ -28,13 +48,21 @@ function getCurrentPage() {
 
 function createSidebarMarkup() {
   const currentPage = getCurrentPage();
-  const links = menuItems.map((item) => {
-    const isActive = item.href === currentPage;
+  const groups = menuGroups.map((group, groupIndex) => {
+    const links = group.items.map((item) => {
+      const isActive = item.href === currentPage || (currentPage === 'employee-detail.html' && item.href === 'employees.html');
+      return `
+        <a class="sidebar-link${isActive ? ' active' : ''}" href="${item.href}"${isActive ? ' aria-current="page"' : ''}>
+          <span class="sidebar-icon">${icons[item.icon]}</span>
+          <span>${item.label}</span>
+        </a>`;
+    }).join('');
+
     return `
-      <a class="sidebar-link${isActive ? ' active' : ''}" href="${item.href}"${isActive ? ' aria-current="page"' : ''}>
-        <span class="sidebar-icon">${icons[item.icon]}</span>
-        <span>${item.label}</span>
-      </a>`;
+      <div class="sidebar-group${groupIndex > 0 ? ' sidebar-group-separated' : ''}">
+        <span class="sidebar-label">${group.label}</span>
+        ${links}
+      </div>`;
   }).join('');
 
   return `
@@ -47,8 +75,7 @@ function createSidebarMarkup() {
       <button class="sidebar-close" type="button" aria-label="Đóng menu">${icons.close}</button>
     </div>
     <nav class="sidebar-nav" aria-label="Menu quản lý nhân sự">
-      <span class="sidebar-label">MANAGEMENT MENU</span>
-      ${links}
+      ${groups}
     </nav>
     <div class="sidebar-footer">
       <div style="font-weight: 600; color: var(--color-navy-800); margin-bottom: 2px;">© 2025 HR Manager</div>
